@@ -24,6 +24,8 @@ protected:
     void addEnemy(const int count);
     CREATE_FUNC(MainScene);
     void rotateRay(const cocos2d::Point& toPoint);
+    std::string getScore() const;
+    void updateScore();
     
 protected:
     EntityPtr mBackground;
@@ -38,6 +40,9 @@ protected:
     size_t mMaxObjectsOnScene;
     
     cocos2d::Size mVisibleSize;
+    cocos2d::Point mOrigin;
+    cocos2d::Label* mScoreLabel;
+    unsigned int mScore;
     
     std::list<EnemyPtr> mEnemies;
     

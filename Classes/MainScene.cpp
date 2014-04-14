@@ -45,6 +45,8 @@ void MainScene::update(const float delta) {
                 (*bullet)->markForRemove();
                 (*enemy)->markForRemove();
                 (*enemy)->wasKilled();
+                mScore++;
+                updateScore();
                 break;
             }
         }
@@ -80,35 +82,35 @@ void MainScene::update(const float delta) {
 
 void MainScene::createWorld() {
     mVisibleSize = Director::getInstance()->getVisibleSize();
-    Point origin = Director::getInstance()->getVisibleOrigin();
+    mOrigin = Director::getInstance()->getVisibleOrigin();
     
     mBackground.reset(new Entity("background"));
     mBackground->setScale(mVisibleSize.width / mBackground->getWidth(), mVisibleSize.height / mBackground->getHeight());
-    mBackground->setPosition(origin.x + (mVisibleSize.width/2), origin.y + (mVisibleSize.height/2));
+    mBackground->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + (mVisibleSize.height/2));
     addChild(mBackground->getSprite());
     
     
     mEarth.reset(new Entity("earth"));
     mEarth->setScale(mVisibleSize.width / mEarth->getWidth(), (mVisibleSize.height * 0.3f) / mEarth->getHeight());
-    mEarth->setPosition(origin.x + (mVisibleSize.width/2), origin.y + mEarth->getHeight()/2);
+    mEarth->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEarth->getHeight()/2);
     addChild(mEarth->getSprite());
     
     
     mHead.reset(new Entity("head"));
-    mHead->setScale( ((mVisibleSize.height - (origin.y+mEarth->getHeight()/2))*0.8) / mHead->getHeight() );
-    mHead->setPosition(origin.x + (mVisibleSize.width/2), origin.y + mEarth->getHeight() + mHead->getHeight()/2);
+    mHead->setScale( ((mVisibleSize.height - (mOrigin.y+mEarth->getHeight()/2))*0.8) / mHead->getHeight() );
+    mHead->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEarth->getHeight() + mHead->getHeight()/2);
     addChild(mHead->getSprite());
     
     
     mEye.reset(new Entity("eye"));
     mEye->setScale(mHead->getHeight()*0.2 / mEye->getHeight());
-    mEye->setPosition(origin.x + (mVisibleSize.width/2), origin.y + mHead->getPositionY() + (mHead->getHeight()*0.15));
+    mEye->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mHead->getPositionY() + (mHead->getHeight()*0.15));
     addChild(mEye->getSprite());
     
     
     mPupil.reset(new Entity("pupil"));
     mPupil->setScale(mEye->getHeight()*0.6 / mPupil->getHeight());
-    mPupil->setPosition(origin.x + (mVisibleSize.width/2), origin.y + mEye->getPositionY());
+    mPupil->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEye->getPositionY());
     addChild(mPupil->getSprite());
     
     
@@ -126,6 +128,14 @@ void MainScene::createWorld() {
     const float gunPositionY = mEye->getPositionY();
     mGun.reset(new Gun(this, gunShootToX, gunShootToY, gunPositionX, gunPositionY));
  
+    mScore = 0;
+    auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
+    mScoreLabel = cocos2d::Label::create(getScore(), fontFile, 40);
+    mScoreLabel->setAnchorPoint(Point(0.0f,0.0f));
+    mScoreLabel->setAlignment(TextHAlignment::RIGHT);
+    updateScore();
+    addChild(mScoreLabel);
+    
     
     auto listener = EventListenerTouchAllAtOnce::create();
     listener->onTouchesBegan=std::bind(&MainScene::onTouchesBegan, this, std::placeholders::_1, std::placeholders::_2);
@@ -179,4 +189,15 @@ void MainScene::rotateRay(const cocos2d::Point& toPoint) {
     const Point diffVector = Point(mRay->getPositionX(),mRay->getPositionY()) - toPoint;
     const float rayAngle   = atan2f(diffVector.x, diffVector.y);
     mRay->rotateSprite(rayAngle);
+}
+
+std::string MainScene::getScore() const {
+    std::ostringstream oss;
+    oss << "Score: " << mScore;
+    return oss.str();
+}
+
+void MainScene::updateScore() {
+    mScoreLabel->setString(getScore());
+    mScoreLabel->setPosition(mOrigin.x+mVisibleSize.width-mScoreLabel->getContentSize().width, mOrigin.y+mVisibleSize.height-mScoreLabel->getContentSize().height);
 }
