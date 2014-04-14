@@ -153,7 +153,7 @@ void MainScene::createWorld() {
 
 void MainScene::addEnemy(const int count) {
     const float minDistanceToHead = 10.0f;
-    const float moveToY = mHead->getPositionY() - mHead->getHeight()/2;
+    const float moveToY = mOrigin.x + mVisibleSize.height;
     for (int i = 0; i < count; ++i) {
         const float xPosition = (float)rand()/((float)RAND_MAX/(mVisibleSize.width));
         const float yPosition = 10.0f;

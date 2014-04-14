@@ -33,8 +33,8 @@ private:
     float mAimX, mAimY;
     float mStartX, mStartY;
 
-    constexpr static const float SHOOT_INTERVAL    = 0.2f;
-    constexpr static const float SPEED             = 400.0f;
+    const float SHOOT_INTERVAL    = 0.5f;
+    const float SPEED             = 4000.0f;
 };
 
 typedef std::shared_ptr<Gun> GunPtr;
