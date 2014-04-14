@@ -18,6 +18,9 @@ bool MainScene::init() {
 
 void MainScene::update(const float delta) {
     
+    if (isGameStopped())
+        return;
+    
     if (getChildrenCount() > mMaxObjectsOnScene) {
         mMaxObjectsOnScene = getChildrenCount();
         std::cout << "Max objects count: " << mMaxObjectsOnScene << std::endl;
@@ -27,6 +30,12 @@ void MainScene::update(const float delta) {
         (*enemy)->update(delta);
     
     mGun->update(delta);
+    
+    for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
+        if ((*enemy)->enemyKillHead())
+            stopGame();
+    }
+    
     
     //
     // Check collision bullets with enemies
@@ -149,6 +158,9 @@ void MainScene::createWorld() {
     schedule(schedule_selector(MainScene::update));
     
     addEnemy(ENEMIES_COUNT);
+    
+    mLastLabel = NULL;
+    mIsGameStopped = false;
 }
 
 void MainScene::addEnemy(const int count) {
@@ -165,21 +177,52 @@ void MainScene::addEnemy(const int count) {
 }
 
 void MainScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event) {
-    for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-        mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
-        rotateRay((*touch)->getLocation());
+    
+    if (isGameStopped()) {
+        startNewGame();
+    } else {
+        for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+            mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
+            rotateRay((*touch)->getLocation());
+        }
     }
 }
 
 void MainScene::onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
-    for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-        mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
-        rotateRay((*touch)->getLocation());
+    if (isGameStopped()) {
+        startNewGame();
+    } else {
+        for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+            mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
+            rotateRay((*touch)->getLocation());
+        }
     }
 }
 
 void MainScene::onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
     
+}
+
+void MainScene::startNewGame() {
+    for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
+        (*enemy)->markForRemove();
+    }
+    
+    for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
+        if ((*enemy)->isMarkForRemove()) {
+            removeChild((*enemy)->getSprite());
+            mEnemies.erase(enemy);
+        }
+    }
+    addEnemy(ENEMIES_COUNT);
+    
+    mIsGameStopped = false;
+    
+    mScore = 0;
+    
+    removeChild(mLastLabel);
+    
+    updateScore();
 }
 
 void MainScene::rotateRay(const cocos2d::Point& toPoint) {
@@ -197,4 +240,17 @@ std::string MainScene::getScore() const {
 void MainScene::updateScore() {
     mScoreLabel->setString(getScore());
     mScoreLabel->setPosition(mOrigin.x+mVisibleSize.width-mScoreLabel->getContentSize().width, mOrigin.y+mVisibleSize.height-mScoreLabel->getContentSize().height);
+}
+
+void MainScene::stopGame() {
+    mIsGameStopped = true;
+    auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
+    char byebyeText[1024];
+    snprintf(byebyeText, 1024, "You are dead, you kill %i enemy. Touch screen to restart", mScore);
+    if (mLastLabel == NULL)
+        mLastLabel = Label::create(std::string(byebyeText), fontFile, 40);
+    
+    mLastLabel->setPosition(mOrigin.x + mVisibleSize.width/2 - (mLastLabel->getWidth()/2),
+                            mOrigin.y + mVisibleSize.height/2 - (mLastLabel->getHeight()/2));
+    addChild(mLastLabel);
 }

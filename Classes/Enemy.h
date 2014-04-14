@@ -17,7 +17,7 @@ public:
     virtual void update(const float delta);
     virtual bool canRemove() const { return mCanRemove; }
     void wasKilled() { mWasKilled = true; }
-    
+    bool enemyKillHead() const { return mMovingVector.getLength() < mMinDistance; }
 protected:
     float mMinDistance;
     float mSpeed;
@@ -38,6 +38,9 @@ protected:
         COIN
     };
     
+    cocos2d::Point mMovingVector;
+        
+        
     ENEMY_STATE mState;
 };
 

@@ -51,15 +51,14 @@ void Enemy::update(const float delta) {
         return;
     }
 
-    cocos2d::Point movingVector = cocos2d::Point(mMoveToX-mX, mMoveToY-mY);
-    const float movingVectorLen = movingVector.getLength();
-    if (movingVectorLen==0 || movingVectorLen < mMinDistance) {
+    mMovingVector = cocos2d::Point(mMoveToX-mX, mMoveToY-mY);
+    if (mMovingVector.getLength()==0) {
         markForRemove();
         mCanRemove = true;
         return;
     }
     
-    movingVector = movingVector/movingVector.getLength();
+    cocos2d::Point movingVector = mMovingVector/mMovingVector.getLength();
     const float newX = mX + (delta*mSpeed*movingVector.x);
     const float newY = mY + (delta*mSpeed*movingVector.y);
     setPosition(newX, newY);

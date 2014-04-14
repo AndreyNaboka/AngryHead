@@ -26,7 +26,9 @@ protected:
     void rotateRay(const cocos2d::Point& toPoint);
     std::string getScore() const;
     void updateScore();
-    
+    bool isGameStopped() const { return mIsGameStopped; }
+    void stopGame();
+    void startNewGame();
 protected:
     EntityPtr mBackground;
     EntityPtr mEarth;
@@ -38,10 +40,11 @@ protected:
     GunPtr mGun;
     
     size_t mMaxObjectsOnScene;
-    
+    bool mIsGameStopped;
     cocos2d::Size mVisibleSize;
     cocos2d::Point mOrigin;
     cocos2d::Label* mScoreLabel;
+    cocos2d::Label* mLastLabel;
     unsigned int mScore;
     
     std::list<EnemyPtr> mEnemies;
