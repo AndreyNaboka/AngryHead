@@ -152,16 +152,13 @@ void MainScene::createWorld() {
 }
 
 void MainScene::addEnemy(const int count) {
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Point origin = Director::getInstance()->getVisibleOrigin();
     const float minDistanceToHead = 10.0f;
-    const float moveToX = origin.x + visibleSize.width/2;
     const float moveToY = mHead->getPositionY() - mHead->getHeight()/2;
     for (int i = 0; i < count; ++i) {
-        const float xPosition = (float)rand()/((float)RAND_MAX/(visibleSize.width));
+        const float xPosition = (float)rand()/((float)RAND_MAX/(mVisibleSize.width));
         const float yPosition = 10.0f;
         auto enemy = mEnemies.insert(mEnemies.end(), EnemyPtr(new Enemy("enemy", minDistanceToHead)));
-        (*enemy)->setMoveTo(moveToX, moveToY);
+        (*enemy)->setMoveTo(xPosition, moveToY);
         (*enemy)->setPosition(xPosition, yPosition);
         addChild((*enemy)->getSprite());
     }
