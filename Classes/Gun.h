@@ -20,6 +20,8 @@ public:
     std::list<EntityPtr>::iterator firstBullet() { return mBullets.begin(); }
     std::list<EntityPtr>::iterator endBullet()   { return mBullets.end(); }
     void removeBullete(const std::list<EntityPtr>::iterator& it);
+    void setNewGunLevel(const int level);
+    int getGunLevel() const { return mLevel; }
     
 private:
     void addNewBullets(const int count);
@@ -29,12 +31,15 @@ private:
     cocos2d::Layer* mParent;
     
     std::list<EntityPtr> mBullets;
+    
     float mTimeToNextShoot;
     float mAimX, mAimY;
     float mStartX, mStartY;
-
-    const float SHOOT_INTERVAL    = 0.5f;
-    const float SPEED             = 4000.0f;
+    float mSpeedPower;
+    int   mLevel;
+    
+    static const float SHOOT_INTERVAL;//    = 0.5f;
+    static const float BASE_SPEED;//        = 3000.0f;
 };
 
 typedef std::shared_ptr<Gun> GunPtr;

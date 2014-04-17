@@ -9,6 +9,9 @@
 #include "Gun.h"
 #include <iostream>
 
+const float Gun::SHOOT_INTERVAL = 0.5f;
+const float Gun::BASE_SPEED = 3000.0f;
+
 Gun::Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const float startX, const float startY)
     :mTimeToNextShoot(SHOOT_INTERVAL)
     ,mAimX(aimX)
@@ -16,6 +19,8 @@ Gun::Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const
     ,mStartX(startX)
     ,mStartY(startY)
     ,mParent(parent)
+    ,mSpeedPower(1000.0f)
+    ,mLevel(0)
 {
     addNewBullets(1);
 }
@@ -36,8 +41,8 @@ void Gun::updateBullets(const float delta) {
         float angle = M_PI_2 - atan2f(diffVector.x,diffVector.y);
         cocos2d::Point directionVector = cocos2d::Point(cosf(-1*angle), sinf(-1*angle));
         directionVector.normalize();
-        float newX = (*bullet)->getPositionX() - (delta*SPEED*directionVector.x);
-        float newY = (*bullet)->getPositionY() + (delta*SPEED*directionVector.y);
+        float newX = (*bullet)->getPositionX() - (delta*(BASE_SPEED+mSpeedPower)*directionVector.x);
+        float newY = (*bullet)->getPositionY() + (delta*(BASE_SPEED+mSpeedPower)*directionVector.y);
         (*bullet)->setPosition(newX,newY);
     }
 }
@@ -59,4 +64,9 @@ void Gun::setNewAim(const float x, const float y) {
 void Gun::removeBullete(const std::list<EntityPtr>::iterator &it) {
     mParent->removeChild((*it)->getSprite());
     mBullets.erase(it);
+}
+
+void Gun::setNewGunLevel(const int level) {
+    mLevel = level;
+    mSpeedPower *= level;
 }

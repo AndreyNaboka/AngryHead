@@ -4,6 +4,8 @@
 
 USING_NS_CC;
 
+const int MainScene::LEVELS[] = { 10, 30, 60, 90, 140 };
+
 Scene* MainScene::createScene() {
     auto scene = Scene::create();
     auto layer = MainScene::create();
@@ -26,11 +28,9 @@ void MainScene::updateGameObjects(const float delta) {
         if ((*enemy)->enemyKillHead())
             gameOver();
     }
-    
-    
-    //
-    // Check collision bullets with enemies
-    //
+}
+
+void MainScene::checkCollisionEnemiesWithBullets() {
     for (auto bullet = mGun->firstBullet(); bullet != mGun->endBullet(); ++bullet) {
         for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
             
@@ -46,16 +46,16 @@ void MainScene::updateGameObjects(const float delta) {
                 (*enemy)->markForRemove();
                 (*enemy)->wasKilled();
                 mScore++;
+                mMoney += 10;
+                mEnemiesForNextLevel--;
                 updateScore();
                 break;
             }
         }
     }
-    
-    
-    //
-    // Remove enemies whose touch to head
-    //
+}
+
+void MainScene::removeObjectsFromScene() {
     unsigned int addEnemiesCount = 0;
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
         if ((*enemy)->isMarkForRemove() && (*enemy)->isCanRemove()) {
@@ -66,9 +66,6 @@ void MainScene::updateGameObjects(const float delta) {
     }
     addEnemy(addEnemiesCount);
     
-    //
-    // Remove out of bounds bullets
-    //
     for (auto bullet = mGun->firstBullet(); bullet != mGun->endBullet(); ++bullet) {
         if (((*bullet)->isMarkForRemove() && (*bullet)->isCanRemove()) ||
             (*bullet)->getPositionX() > mVisibleSize.width ||
@@ -86,6 +83,9 @@ void MainScene::update(const float delta) {
     switch (mGameState) {
         case MAIN_GAME_STATE:
             updateGameObjects(delta);
+            checkCollisionEnemiesWithBullets();
+            removeObjectsFromScene();
+
             break;
         case GAME_OVER:
             break;
@@ -94,81 +94,6 @@ void MainScene::update(const float delta) {
     }
     
 
-}
-
-
-void MainScene::createWorld() {
-    mVisibleSize = Director::getInstance()->getVisibleSize();
-    mOrigin = Director::getInstance()->getVisibleOrigin();
-    
-    mBackground.reset(new Entity("background"));
-    mBackground->setScale(mVisibleSize.width / mBackground->getWidth(), mVisibleSize.height / mBackground->getHeight());
-    mBackground->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + (mVisibleSize.height/2));
-    addChild(mBackground->getSprite());
-    
-    
-    mEarth.reset(new Entity("earth"));
-    mEarth->setScale(mVisibleSize.width / mEarth->getWidth(), (mVisibleSize.height * 0.3f) / mEarth->getHeight());
-    mEarth->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEarth->getHeight()/2);
-    addChild(mEarth->getSprite());
-    
-    
-    mHead.reset(new Entity("head"));
-    mHead->setScale( ((mVisibleSize.height - (mOrigin.y+mEarth->getHeight()/2))*0.8) / mHead->getHeight() );
-    mHead->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEarth->getHeight() + mHead->getHeight()/2);
-    addChild(mHead->getSprite());
-    
-    
-    mEye.reset(new Entity("eye"));
-    mEye->setScale(mHead->getHeight()*0.2 / mEye->getHeight());
-    mEye->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mHead->getPositionY() + (mHead->getHeight()*0.15));
-    addChild(mEye->getSprite());
-    
-    
-    mPupil.reset(new Entity("pupil"));
-    mPupil->setScale(mEye->getHeight()*0.6 / mPupil->getHeight());
-    mPupil->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEye->getPositionY());
-    addChild(mPupil->getSprite());
-    
-    
-    mRay.reset(new Entity("ray"));
-    mRay->setScale(1.0f, mVisibleSize.width/mRay->getHeight());
-    mRay->setAnchorPoint(0.5f, 1.0f);
-    mRay->setPosition(mPupil->getPositionX(), mPupil->getPositionY());
-    mRay->setOpacity(40);
-    addChild(mRay->getSprite());
-    
-    
-    const float gunShootToX = mVisibleSize.width/2;
-    const float gunShootToY = 0.0f;
-    const float gunPositionX = mEye->getPositionX();
-    const float gunPositionY = mEye->getPositionY();
-    mGun.reset(new Gun(this, gunShootToX, gunShootToY, gunPositionX, gunPositionY));
- 
-    mScore = 0;
-    auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
-    mScoreLabel = cocos2d::Label::create(getScore(), fontFile, 40);
-    mScoreLabel->setAnchorPoint(Point(0.0f,0.0f));
-    mScoreLabel->setAlignment(TextHAlignment::RIGHT);
-    updateScore();
-    addChild(mScoreLabel);
-    
-    
-    auto listener = EventListenerTouchAllAtOnce::create();
-    listener->onTouchesBegan=std::bind(&MainScene::onTouchesBegan, this, std::placeholders::_1, std::placeholders::_2);
-    listener->onTouchesMoved=std::bind(&MainScene::onTouchesMoved, this, std::placeholders::_1, std::placeholders::_2);
-    listener->onTouchesEnded=std::bind(&MainScene::onTouchesEnded, this, std::placeholders::_1, std::placeholders::_2);
-    Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(listener, 100);
-    
-    mMaxObjectsOnScene = 0;
-    
-    srand(static_cast<unsigned int>(time(0)));
-    schedule(schedule_selector(MainScene::update));
-    
-    addEnemy(ENEMIES_COUNT);
-    
-    mLastLabel = NULL;
-    mGameState = MAIN_GAME_STATE;
 }
 
 void MainScene::addEnemy(const int count) {
@@ -222,22 +147,18 @@ void MainScene::onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, coco
 
 void MainScene::startNewGame() {
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
-        (*enemy)->markForRemove();
-    }
-    
-    for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
-        if ((*enemy)->isMarkForRemove()) {
-            removeChild((*enemy)->getSprite());
-            mEnemies.erase(enemy);
-        }
+        removeChild((*enemy)->getSprite());
+        mEnemies.erase(enemy);
     }
     addEnemy(ENEMIES_COUNT);
 
     mGameState = MAIN_GAME_STATE;
     
     mScore = 0;
-    
-    
+    mMoney = 0;
+    mLevel = 0;
+    mEnemiesForNextLevel = LEVELS[mLevel];
+
     removeChild(mLastLabel);
     
     updateScore();
@@ -251,7 +172,7 @@ void MainScene::rotateRay(const cocos2d::Point& toPoint) {
 
 std::string MainScene::getScore() const {
     std::ostringstream oss;
-    oss << "Score: " << mScore;
+    oss << "Enemies for next level: " << mEnemiesForNextLevel << ", score: " << mScore;
     return oss.str();
 }
 
@@ -279,4 +200,82 @@ void MainScene::showDebugInfo() {
         mMaxObjectsOnScene = getChildrenCount();
         std::cout << "Max objects count: " << mMaxObjectsOnScene << std::endl;
     }
+}
+
+void MainScene::createWorld() {
+    mVisibleSize = Director::getInstance()->getVisibleSize();
+    mOrigin = Director::getInstance()->getVisibleOrigin();
+    
+    mBackground.reset(new Entity("background"));
+    mBackground->setScale(mVisibleSize.width / mBackground->getWidth(), mVisibleSize.height / mBackground->getHeight());
+    mBackground->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + (mVisibleSize.height/2));
+    addChild(mBackground->getSprite());
+    
+    
+    mEarth.reset(new Entity("earth"));
+    mEarth->setScale(mVisibleSize.width / mEarth->getWidth(), (mVisibleSize.height * 0.3f) / mEarth->getHeight());
+    mEarth->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEarth->getHeight()/2);
+    addChild(mEarth->getSprite());
+    
+    
+    mHead.reset(new Entity("head"));
+    mHead->setScale( ((mVisibleSize.height - (mOrigin.y+mEarth->getHeight()/2))*0.8) / mHead->getHeight() );
+    mHead->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEarth->getHeight() + mHead->getHeight()/2);
+    addChild(mHead->getSprite());
+    
+    
+    mEye.reset(new Entity("eye"));
+    mEye->setScale(mHead->getHeight()*0.2 / mEye->getHeight());
+    mEye->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mHead->getPositionY() + (mHead->getHeight()*0.15));
+    addChild(mEye->getSprite());
+    
+    
+    mPupil.reset(new Entity("pupil"));
+    mPupil->setScale(mEye->getHeight()*0.6 / mPupil->getHeight());
+    mPupil->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mEye->getPositionY());
+    addChild(mPupil->getSprite());
+    
+    
+    mRay.reset(new Entity("ray"));
+    mRay->setScale(1.0f, mVisibleSize.width/mRay->getHeight());
+    mRay->setAnchorPoint(0.5f, 1.0f);
+    mRay->setPosition(mPupil->getPositionX(), mPupil->getPositionY());
+    mRay->setOpacity(40);
+    addChild(mRay->getSprite());
+    
+    
+    const float gunShootToX = mVisibleSize.width/2;
+    const float gunShootToY = 0.0f;
+    const float gunPositionX = mEye->getPositionX();
+    const float gunPositionY = mEye->getPositionY();
+    mGun.reset(new Gun(this, gunShootToX, gunShootToY, gunPositionX, gunPositionY));
+    
+    mScore = 0;
+    auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
+    mScoreLabel = cocos2d::Label::create(getScore(), fontFile, 40);
+    mScoreLabel->setAnchorPoint(Point(0.0f,0.0f));
+    mScoreLabel->setAlignment(TextHAlignment::RIGHT);
+    updateScore();
+    addChild(mScoreLabel);
+    
+    
+    auto listener = EventListenerTouchAllAtOnce::create();
+    listener->onTouchesBegan=std::bind(&MainScene::onTouchesBegan, this, std::placeholders::_1, std::placeholders::_2);
+    listener->onTouchesMoved=std::bind(&MainScene::onTouchesMoved, this, std::placeholders::_1, std::placeholders::_2);
+    listener->onTouchesEnded=std::bind(&MainScene::onTouchesEnded, this, std::placeholders::_1, std::placeholders::_2);
+    Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(listener, 100);
+    
+    mMaxObjectsOnScene = 0;
+    
+    srand(static_cast<unsigned int>(time(0)));
+    schedule(schedule_selector(MainScene::update));
+    
+    addEnemy(ENEMIES_COUNT);
+    
+    mMoney = 0;
+    mLevel = 0;
+    mEnemiesForNextLevel = LEVELS[mLevel];
+    
+    mLastLabel = NULL;
+    mGameState = MAIN_GAME_STATE;
 }

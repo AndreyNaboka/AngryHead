@@ -24,8 +24,8 @@ protected:
     bool  mCanRemove;
     bool  mWasKilled;
     
-    const float MIN_SPEED = 100.0f;//20.0f;
-    const float MAX_SPEED = 200.0f;//40.0f;
+    const float MIN_SPEED = 30.0f;
+    const float MAX_SPEED = 50.0f;
     
     const float TIME_TO_SHOW_EXLOSION = 1.0f;
     const float TIME_TO_SHOW_COIN     = 1.0f;

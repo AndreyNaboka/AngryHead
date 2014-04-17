@@ -30,6 +30,10 @@ private:
     void gameOver();
     void updateGameObjects(const float delta);
     void showDebugInfo();
+    void checkCollisionEnemiesWithBullets();
+    void removeObjectsFromScene();
+    void showLevelUp();
+    
 private:
     EntityPtr mBackground;
     EntityPtr mEarth;
@@ -46,16 +50,20 @@ private:
     cocos2d::Label* mScoreLabel;
     cocos2d::Label* mLastLabel;
     unsigned int mScore;
+    unsigned int mMoney;
+    unsigned int mEnemiesForNextLevel;
+    unsigned int mLevel;
     
     std::list<EnemyPtr> mEnemies;
     
     static const int ENEMIES_COUNT = 10;
-    
+    static const int LEVELS[];
     
     
     enum GAME_STATE {
         MAIN_GAME_STATE,
-        GAME_OVER
+        GAME_OVER,
+        LEVEL_UP
     };
     
     GAME_STATE mGameState;
