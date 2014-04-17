@@ -15,7 +15,7 @@ class Enemy : public Entity {
 public:
     Enemy(const std::string& name, const float minDistance);
     virtual void update(const float delta);
-    virtual bool canRemove() const { return mCanRemove; }
+    virtual bool isCanRemove() const { return mCanRemove; }
     void wasKilled() { mWasKilled = true; }
     bool enemyKillHead() const { return mMovingVector.getLength() < mMinDistance; }
 protected:

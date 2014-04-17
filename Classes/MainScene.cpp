@@ -16,16 +16,7 @@ bool MainScene::init() {
     return true;
 }
 
-void MainScene::update(const float delta) {
-    
-    if (isGameStopped())
-        return;
-    
-    if (getChildrenCount() > mMaxObjectsOnScene) {
-        mMaxObjectsOnScene = getChildrenCount();
-        std::cout << "Max objects count: " << mMaxObjectsOnScene << std::endl;
-    }
-    
+void MainScene::updateGameObjects(const float delta) {
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy)
         (*enemy)->update(delta);
     
@@ -33,7 +24,7 @@ void MainScene::update(const float delta) {
     
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
         if ((*enemy)->enemyKillHead())
-            stopGame();
+            mGameState = GAME_OVER;
     }
     
     
@@ -67,7 +58,7 @@ void MainScene::update(const float delta) {
     //
     unsigned int addEnemiesCount = 0;
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
-        if ((*enemy)->isMarkForRemove() && (*enemy)->canRemove()) {
+        if ((*enemy)->isMarkForRemove() && (*enemy)->isCanRemove()) {
             removeChild((*enemy)->getSprite());
             mEnemies.erase(enemy);
             addEnemiesCount++;
@@ -79,13 +70,30 @@ void MainScene::update(const float delta) {
     // Remove out of bounds bullets
     //
     for (auto bullet = mGun->firstBullet(); bullet != mGun->endBullet(); ++bullet) {
-        if (((*bullet)->isMarkForRemove() && (*bullet)->canRemove()) ||
-             (*bullet)->getPositionX() > mVisibleSize.width ||
-             (*bullet)->getPositionX() <= 10.0f ||
-             (*bullet)->getPositionY() > mVisibleSize.height ||
-             (*bullet)->getPositionY() <= 10.0f)
+        if (((*bullet)->isMarkForRemove() && (*bullet)->isCanRemove()) ||
+            (*bullet)->getPositionX() > mVisibleSize.width ||
+            (*bullet)->getPositionX() <= 10.0f ||
+            (*bullet)->getPositionY() > mVisibleSize.height ||
+            (*bullet)->getPositionY() <= 10.0f)
             mGun->removeBullete(bullet);
     }
+}
+
+void MainScene::update(const float delta) {
+    
+    showDebugInfo();
+    
+    switch (mGameState) {
+        case MAIN_GAME_STATE:
+            updateGameObjects(delta);
+            break;
+        case GAME_OVER:
+            break;
+        default:
+            break;
+    }
+    
+
 }
 
 
@@ -160,7 +168,7 @@ void MainScene::createWorld() {
     addEnemy(ENEMIES_COUNT);
     
     mLastLabel = NULL;
-    mIsGameStopped = false;
+    mGameState = MAIN_GAME_STATE;
 }
 
 void MainScene::addEnemy(const int count) {
@@ -177,25 +185,34 @@ void MainScene::addEnemy(const int count) {
 }
 
 void MainScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event) {
-    
-    if (isGameStopped()) {
-        startNewGame();
-    } else {
-        for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-            mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
-            rotateRay((*touch)->getLocation());
-        }
+    switch (mGameState) {
+        case GAME_OVER:
+            startNewGame();
+            break;
+        case MAIN_GAME_STATE:
+            for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+                mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
+                rotateRay((*touch)->getLocation());
+            }
+            break;
+        default:
+            break;
     }
 }
 
 void MainScene::onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
-    if (isGameStopped()) {
-        startNewGame();
-    } else {
-        for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-            mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
-            rotateRay((*touch)->getLocation());
-        }
+    switch (mGameState) {
+        case GAME_OVER:
+            startNewGame();
+            break;
+        case MAIN_GAME_STATE:
+            for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+                mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
+                rotateRay((*touch)->getLocation());
+            }
+            break;
+        default:
+            break;
     }
 }
 
@@ -215,8 +232,8 @@ void MainScene::startNewGame() {
         }
     }
     addEnemy(ENEMIES_COUNT);
-    
-    mIsGameStopped = false;
+
+    mGameState = MAIN_GAME_STATE;
     
     mScore = 0;
     
@@ -242,8 +259,7 @@ void MainScene::updateScore() {
     mScoreLabel->setPosition(mOrigin.x+mVisibleSize.width-mScoreLabel->getContentSize().width, mOrigin.y+mVisibleSize.height-mScoreLabel->getContentSize().height);
 }
 
-void MainScene::stopGame() {
-    mIsGameStopped = true;
+void MainScene::gameOver() {
     auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
     char byebyeText[1024];
     snprintf(byebyeText, 1024, "You are dead, you kill %i enemy. Touch screen to restart", mScore);
@@ -251,4 +267,11 @@ void MainScene::stopGame() {
     mLastLabel->setPosition(mOrigin.x + mVisibleSize.width/2 - (mLastLabel->getWidth()/2),
                             mOrigin.y + mVisibleSize.height/2 - (mLastLabel->getHeight()/2));
     addChild(mLastLabel);
+}
+
+void MainScene::showDebugInfo() {
+    if (getChildrenCount() > mMaxObjectsOnScene) {
+        mMaxObjectsOnScene = getChildrenCount();
+        std::cout << "Max objects count: " << mMaxObjectsOnScene << std::endl;
+    }
 }

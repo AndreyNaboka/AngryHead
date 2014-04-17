@@ -29,7 +29,7 @@ public:
     void               setOpacity(const int opacity);
     bool               isMarkForRemove() const { return mNeedRemove; }
     void               markForRemove() { mNeedRemove = true; }
-    virtual bool       canRemove() const { return true; }
+    virtual bool       isCanRemove() const { return true; }
     void               setMoveTo(const float x, const float y);
     float              getMoveToX() const { return mMoveToX; }
     float              getMoveToY() const { return mMoveToY; }

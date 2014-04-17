@@ -19,17 +19,18 @@ public:
     virtual void onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event *event);
     virtual void onTouchesBegan(const std::vector<cocos2d::Touch*>&, cocos2d::Event*);
     
-protected:
+private:
     void createWorld();
     void addEnemy(const int count);
     CREATE_FUNC(MainScene);
     void rotateRay(const cocos2d::Point& toPoint);
     std::string getScore() const;
     void updateScore();
-    bool isGameStopped() const { return mIsGameStopped; }
-    void stopGame();
     void startNewGame();
-protected:
+    void gameOver();
+    void updateGameObjects(const float delta);
+    void showDebugInfo();
+private:
     EntityPtr mBackground;
     EntityPtr mEarth;
     EntityPtr mHead;
@@ -40,7 +41,6 @@ protected:
     GunPtr mGun;
     
     size_t mMaxObjectsOnScene;
-    bool mIsGameStopped;
     cocos2d::Size mVisibleSize;
     cocos2d::Point mOrigin;
     cocos2d::Label* mScoreLabel;
@@ -50,6 +50,15 @@ protected:
     std::list<EnemyPtr> mEnemies;
     
     static const int ENEMIES_COUNT = 10;
+    
+    
+    
+    enum GAME_STATE {
+        MAIN_GAME_STATE,
+        GAME_OVER
+    };
+    
+    GAME_STATE mGameState;
 };
 
 #endif // __HELLOWORLD_SCENE_H__
