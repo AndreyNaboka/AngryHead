@@ -24,7 +24,7 @@ void MainScene::updateGameObjects(const float delta) {
     
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
         if ((*enemy)->enemyKillHead())
-            mGameState = GAME_OVER;
+            gameOver();
     }
     
     
@@ -237,6 +237,7 @@ void MainScene::startNewGame() {
     
     mScore = 0;
     
+    
     removeChild(mLastLabel);
     
     updateScore();
@@ -260,13 +261,17 @@ void MainScene::updateScore() {
 }
 
 void MainScene::gameOver() {
+    mGameState = GAME_OVER;
     auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
     char byebyeText[1024];
     snprintf(byebyeText, 1024, "You are dead, you kill %i enemy. Touch screen to restart", mScore);
+
     mLastLabel = Label::create(std::string(byebyeText), fontFile, 40);
+    addChild(mLastLabel);
+
+
     mLastLabel->setPosition(mOrigin.x + mVisibleSize.width/2 - (mLastLabel->getWidth()/2),
                             mOrigin.y + mVisibleSize.height/2 - (mLastLabel->getHeight()/2));
-    addChild(mLastLabel);
 }
 
 void MainScene::showDebugInfo() {
