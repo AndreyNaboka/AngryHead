@@ -33,6 +33,9 @@ private:
     void checkCollisionEnemiesWithBullets();
     void removeObjectsFromScene();
     void showLevelUp();
+    void proceedTouches(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event *event);
+    void hideLevelUp();
+    void hideGameOver();
     
 private:
     EntityPtr mBackground;
@@ -41,6 +44,11 @@ private:
     EntityPtr mEye;
     EntityPtr mPupil;
     EntityPtr mRay;
+
+    EntityPtr mUpgradeButton;
+    EntityPtr mStartAfterUpgradeButton;
+    cocos2d::Label* mUpgradeLabel;
+    
     
     GunPtr mGun;
     

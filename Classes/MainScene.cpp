@@ -4,7 +4,7 @@
 
 USING_NS_CC;
 
-const int MainScene::LEVELS[] = { 10, 30, 60, 90, 140 };
+const int MainScene::LEVELS[] = { 5, 10, 30, 45, 80 };
 
 Scene* MainScene::createScene() {
     auto scene = Scene::create();
@@ -47,7 +47,10 @@ void MainScene::checkCollisionEnemiesWithBullets() {
                 (*enemy)->wasKilled();
                 mScore++;
                 mMoney += 10;
-                mEnemiesForNextLevel--;
+                if (mLevel < 5)
+                    mEnemiesForNextLevel--;
+                else
+                    mEnemiesForNextLevel = 0;
                 updateScore();
                 break;
             }
@@ -85,7 +88,10 @@ void MainScene::update(const float delta) {
             updateGameObjects(delta);
             checkCollisionEnemiesWithBullets();
             removeObjectsFromScene();
-
+            if (mEnemiesForNextLevel == 0 && mLevel < 4)
+                showLevelUp();
+            break;
+        case LEVEL_UP:
             break;
         case GAME_OVER:
             break;
@@ -94,6 +100,32 @@ void MainScene::update(const float delta) {
     }
     
 
+}
+
+void MainScene::showLevelUp() {
+    mGameState = LEVEL_UP;
+    mLevel++;
+    mEnemiesForNextLevel = LEVELS[mLevel];
+
+    updateScore();
+    
+    mUpgradeButton.reset(new Entity("upgrade_text"));
+    mUpgradeButton->setPosition(mOrigin.x + (mUpgradeButton->getWidth()/2), mOrigin.y+mUpgradeButton->getHeight());
+    
+    mStartAfterUpgradeButton.reset(new Entity("start_after_upgrade_button"));
+    mStartAfterUpgradeButton->setPosition(mOrigin.x + mVisibleSize.width-(mStartAfterUpgradeButton->getWidth()/2),
+                                          mOrigin.y + mStartAfterUpgradeButton->getHeight());
+    
+    
+    char moneyLabelText[1024];
+    snprintf(moneyLabelText, 1024, "You can upgrade your gun");
+    mUpgradeLabel = Label::create(std::string(moneyLabelText), "", 40);
+    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
+                               mOrigin.y + mVisibleSize.height/2);
+    
+    addChild(mUpgradeButton->getSprite());
+    addChild(mStartAfterUpgradeButton->getSprite());
+    addChild(mUpgradeLabel);
 }
 
 void MainScene::addEnemy(const int count) {
@@ -110,24 +142,25 @@ void MainScene::addEnemy(const int count) {
 }
 
 void MainScene::onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event) {
-    switch (mGameState) {
-        case GAME_OVER:
-            startNewGame();
-            break;
-        case MAIN_GAME_STATE:
-            for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-                mGun->setNewAim((*touch)->getLocation().x, (*touch)->getLocation().y);
-                rotateRay((*touch)->getLocation());
-            }
-            break;
-        default:
-            break;
-    }
+    proceedTouches(touches, event);
 }
 
 void MainScene::onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
+    proceedTouches(touches, event);
+}
+
+void MainScene::onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
+    proceedTouches(touches, event);
+}
+
+void MainScene::hideGameOver() {
+    removeChild(mLastLabel);
+}
+
+void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, cocos2d::Event *event) {
     switch (mGameState) {
         case GAME_OVER:
+            hideGameOver();
             startNewGame();
             break;
         case MAIN_GAME_STATE:
@@ -136,13 +169,41 @@ void MainScene::onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, coco
                 rotateRay((*touch)->getLocation());
             }
             break;
+        case LEVEL_UP:
+            for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+                if (mUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
+                    if (mMoney < 100) return;
+                    mMoney = 0;
+                    char moneyLabelText[1024];
+                    snprintf(moneyLabelText, 1024, "Press start to resume");
+                    mUpgradeLabel->setString(std::string(moneyLabelText));
+                    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
+                                               mOrigin.y + mVisibleSize.height/2);
+                    mGun->setNewGunLevel(mLevel+1);
+                    updateScore();
+                }
+                if (mStartAfterUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
+                    hideLevelUp();
+                }
+            }
+            break;
         default:
             break;
     }
 }
 
-void MainScene::onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
+void MainScene::hideLevelUp() {
+    removeChild(mUpgradeButton->getSprite());
+    removeChild(mStartAfterUpgradeButton->getSprite());
+    removeChild(mUpgradeLabel);
     
+    for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
+        removeChild((*enemy)->getSprite());
+        mEnemies.erase(enemy);
+    }
+    addEnemy(ENEMIES_COUNT);
+    
+    mGameState = MAIN_GAME_STATE;
 }
 
 void MainScene::startNewGame() {
@@ -158,8 +219,7 @@ void MainScene::startNewGame() {
     mMoney = 0;
     mLevel = 0;
     mEnemiesForNextLevel = LEVELS[mLevel];
-
-    removeChild(mLastLabel);
+    mGun->setNewGunLevel(1);
     
     updateScore();
 }
@@ -172,7 +232,7 @@ void MainScene::rotateRay(const cocos2d::Point& toPoint) {
 
 std::string MainScene::getScore() const {
     std::ostringstream oss;
-    oss << "Enemies for next level: " << mEnemiesForNextLevel << ", score: " << mScore;
+    oss << "Gun level: " << mGun->getGunLevel() << ", next level: " << mEnemiesForNextLevel << ", score: " << mScore;
     return oss.str();
 }
 
@@ -277,5 +337,8 @@ void MainScene::createWorld() {
     mEnemiesForNextLevel = LEVELS[mLevel];
     
     mLastLabel = NULL;
+    mUpgradeButton = NULL;
+    mUpgradeLabel = NULL;
+    mStartAfterUpgradeButton = NULL;
     mGameState = MAIN_GAME_STATE;
 }

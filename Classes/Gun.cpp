@@ -10,7 +10,7 @@
 #include <iostream>
 
 const float Gun::SHOOT_INTERVAL = 0.5f;
-const float Gun::BASE_SPEED = 3000.0f;
+const float Gun::BASE_SPEED = 1000.0f;
 
 Gun::Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const float startX, const float startY)
     :mTimeToNextShoot(SHOOT_INTERVAL)
@@ -19,8 +19,8 @@ Gun::Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const
     ,mStartX(startX)
     ,mStartY(startY)
     ,mParent(parent)
-    ,mSpeedPower(1000.0f)
-    ,mLevel(0)
+    ,mSpeedPower(500.0f)
+    ,mLevel(1)
 {
     addNewBullets(1);
 }
@@ -68,5 +68,5 @@ void Gun::removeBullete(const std::list<EntityPtr>::iterator &it) {
 
 void Gun::setNewGunLevel(const int level) {
     mLevel = level;
-    mSpeedPower *= level;
+    mSpeedPower = 500.0f * mLevel;
 }
