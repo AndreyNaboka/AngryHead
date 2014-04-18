@@ -4,8 +4,6 @@
 
 USING_NS_CC;
 
-const int MainScene::LEVELS[] = { 5, 10, 30, 45, 80 };
-
 Scene* MainScene::createScene() {
     auto scene = Scene::create();
     auto layer = MainScene::create();
@@ -46,11 +44,6 @@ void MainScene::checkCollisionEnemiesWithBullets() {
                 (*enemy)->markForRemove();
                 (*enemy)->wasKilled();
                 mScore++;
-                mMoney += 10;
-                if (mLevel < 5)
-                    mEnemiesForNextLevel--;
-                else
-                    mEnemiesForNextLevel = 0;
                 updateScore();
                 break;
             }
@@ -88,8 +81,6 @@ void MainScene::update(const float delta) {
             updateGameObjects(delta);
             checkCollisionEnemiesWithBullets();
             removeObjectsFromScene();
-            if (mEnemiesForNextLevel == 0 && mLevel < 4)
-                showLevelUp();
             break;
         case LEVEL_UP:
             break;
@@ -104,8 +95,6 @@ void MainScene::update(const float delta) {
 
 void MainScene::showLevelUp() {
     mGameState = LEVEL_UP;
-    mLevel++;
-    mEnemiesForNextLevel = LEVELS[mLevel];
 
     updateScore();
     
@@ -171,20 +160,7 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
             break;
         case LEVEL_UP:
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-                if (mUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
-                    if (mMoney < 100) return;
-                    mMoney = 0;
-                    char moneyLabelText[1024];
-                    snprintf(moneyLabelText, 1024, "Press start to resume");
-                    mUpgradeLabel->setString(std::string(moneyLabelText));
-                    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
-                                               mOrigin.y + mVisibleSize.height/2);
-                    mGun->setNewGunLevel(mLevel+1);
-                    updateScore();
-                }
-                if (mStartAfterUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
-                    hideLevelUp();
-                }
+                
             }
             break;
         default:
@@ -216,9 +192,6 @@ void MainScene::startNewGame() {
     mGameState = MAIN_GAME_STATE;
     
     mScore = 0;
-    mMoney = 0;
-    mLevel = 0;
-    mEnemiesForNextLevel = LEVELS[mLevel];
     mGun->setNewGunLevel(1);
     
     updateScore();
@@ -232,7 +205,7 @@ void MainScene::rotateRay(const cocos2d::Point& toPoint) {
 
 std::string MainScene::getScore() const {
     std::ostringstream oss;
-    oss << "Gun level: " << mGun->getGunLevel() << ", next level: " << mEnemiesForNextLevel << ", score: " << mScore;
+    oss << "Score: " << mScore;
     return oss.str();
 }
 
@@ -331,10 +304,6 @@ void MainScene::createWorld() {
     schedule(schedule_selector(MainScene::update));
     
     addEnemy(ENEMIES_COUNT);
-    
-    mMoney = 0;
-    mLevel = 0;
-    mEnemiesForNextLevel = LEVELS[mLevel];
     
     mLastLabel = NULL;
     mUpgradeButton = NULL;

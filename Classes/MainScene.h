@@ -58,14 +58,10 @@ private:
     cocos2d::Label* mScoreLabel;
     cocos2d::Label* mLastLabel;
     unsigned int mScore;
-    unsigned int mMoney;
-    unsigned int mEnemiesForNextLevel;
-    unsigned int mLevel;
     
     std::list<EnemyPtr> mEnemies;
     
     static const int ENEMIES_COUNT = 10;
-    static const int LEVELS[];
     
     
     enum GAME_STATE {
