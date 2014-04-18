@@ -150,7 +150,7 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
     switch (mGameState) {
         case GAME_OVER:
             hideGameOver();
-            startNewGame();
+            showLevelUp();
             break;
         case MAIN_GAME_STATE:
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
@@ -218,7 +218,7 @@ void MainScene::gameOver() {
     mGameState = GAME_OVER;
     auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
     char byebyeText[1024];
-    snprintf(byebyeText, 1024, "You are dead, you kill %i enemy. Touch screen to restart", mScore);
+    snprintf(byebyeText, 1024, "You are dead, you kill %i enemy. Touch screen to upgrade and restart", mScore);
 
     mLastLabel = Label::create(std::string(byebyeText), fontFile, 40);
     addChild(mLastLabel);
