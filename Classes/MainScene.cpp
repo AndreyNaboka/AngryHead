@@ -160,7 +160,9 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
             break;
         case LEVEL_UP:
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-                
+                if (mStartAfterUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
+                    hideLevelUp();
+                }
             }
             break;
         default:
@@ -309,5 +311,5 @@ void MainScene::createWorld() {
     mUpgradeButton = NULL;
     mUpgradeLabel = NULL;
     mStartAfterUpgradeButton = NULL;
-    mGameState = MAIN_GAME_STATE;
+    showLevelUp();
 }
