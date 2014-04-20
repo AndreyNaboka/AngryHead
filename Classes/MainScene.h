@@ -44,9 +44,10 @@ private:
     EntityPtr mEye;
     EntityPtr mPupil;
     EntityPtr mRay;
-
+    
     EntityPtr mUpgradeButton;
     EntityPtr mStartAfterUpgradeButton;
+    EntityPtr mUpgradeBackground;
     cocos2d::Label* mUpgradeLabel;
     
     

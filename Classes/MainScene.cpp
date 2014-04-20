@@ -106,12 +106,18 @@ void MainScene::showLevelUp() {
                                           mOrigin.y + mStartAfterUpgradeButton->getHeight());
     
     
+    mUpgradeBackground.reset(new Entity("upgrade_background"));
+    mUpgradeBackground->setScale(mVisibleSize.width/mUpgradeBackground->getWidth(), mVisibleSize.height/mUpgradeBackground->getHeight());
+    mUpgradeBackground->setPosition(mOrigin.x+(mUpgradeBackground->getWidth()/2), mOrigin.y+(mUpgradeBackground->getHeight()/2));
+    mUpgradeBackground->setOpacity(100);
+    
     char moneyLabelText[1024];
     snprintf(moneyLabelText, 1024, "You can upgrade your gun");
     mUpgradeLabel = Label::create(std::string(moneyLabelText), "", 40);
     mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
                                mOrigin.y + mVisibleSize.height/2);
     
+    addChild(mUpgradeBackground->getSprite());
     addChild(mUpgradeButton->getSprite());
     addChild(mStartAfterUpgradeButton->getSprite());
     addChild(mUpgradeLabel);
@@ -174,6 +180,7 @@ void MainScene::hideLevelUp() {
     removeChild(mUpgradeButton->getSprite());
     removeChild(mStartAfterUpgradeButton->getSprite());
     removeChild(mUpgradeLabel);
+    removeChild(mUpgradeBackground->getSprite());
     
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
         removeChild((*enemy)->getSprite());
