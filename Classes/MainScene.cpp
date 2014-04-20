@@ -112,7 +112,7 @@ void MainScene::showLevelUp() {
     mUpgradeBackground->setOpacity(100);
     
     char moneyLabelText[1024];
-    snprintf(moneyLabelText, 1024, "You can upgrade your gun");
+    snprintf(moneyLabelText, 1024, "Upgrade speed: 20$. You have %i$", mScore);
     mUpgradeLabel = Label::create(std::string(moneyLabelText), "", 40);
     mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
                                mOrigin.y + mVisibleSize.height/2);
@@ -166,8 +166,27 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
             break;
         case LEVEL_UP:
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+                if (!(*touch) || !mUpgradeButton->getSprite() || !mStartAfterUpgradeButton->getSprite()) continue;
                 if (mStartAfterUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
                     hideLevelUp();
+                    break;
+                }
+                
+                if (mUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
+                    if (mScore < 20) return;
+                    mGun->setNewGunLevel(mGun->getGunLevel()+1);
+                    mScore -= 20;
+                    
+                    char moneyLabelText[1024];
+                    snprintf(moneyLabelText, 1024, "Upgrade speed: 20$. You have %i$", mScore);
+                    mUpgradeLabel->setString(std::string(moneyLabelText));
+                    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
+                                               mOrigin.y + mVisibleSize.height/2);
+                    
+                    UserDefault::getInstance()->setIntegerForKey("GunLevel", mGun->getGunLevel());
+                    
+                    updateScore();
+                    break;
                 }
             }
             break;
@@ -199,7 +218,7 @@ void MainScene::startNewGame() {
     addEnemy(ENEMIES_COUNT);
 
     mGameState = MAIN_GAME_STATE;
-    
+
     mScore = 0;
     mGun->setNewGunLevel(1);
     
@@ -219,6 +238,7 @@ std::string MainScene::getScore() const {
 }
 
 void MainScene::updateScore() {
+    UserDefault::getInstance()->setIntegerForKey("Score", mScore);
     mScoreLabel->setString(getScore());
     mScoreLabel->setPosition(mOrigin.x+mVisibleSize.width-mScoreLabel->getContentSize().width, mOrigin.y+mVisibleSize.height-mScoreLabel->getContentSize().height);
 }
@@ -292,7 +312,9 @@ void MainScene::createWorld() {
     const float gunPositionY = mEye->getPositionY();
     mGun.reset(new Gun(this, gunShootToX, gunShootToY, gunPositionX, gunPositionY));
     
-    mScore = 0;
+    mScore = UserDefault::getInstance()->getIntegerForKey("Score");
+    mGun->setNewGunLevel(UserDefault::getInstance()->getIntegerForKey("GunLevel"));
+    
     auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
     mScoreLabel = cocos2d::Label::create(getScore(), fontFile, 40);
     mScoreLabel->setAnchorPoint(Point(0.0f,0.0f));
