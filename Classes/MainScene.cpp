@@ -44,6 +44,7 @@ void MainScene::checkCollisionEnemiesWithBullets() {
                 (*enemy)->markForRemove();
                 (*enemy)->wasKilled();
                 mScore++;
+                Enemy::setNewSpeed(Enemy::getMinSpeed()+0.3f, Enemy::getMaxSpeed()+0.3f);
                 updateScore();
                 break;
             }

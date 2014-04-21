@@ -18,14 +18,16 @@ public:
     virtual bool isCanRemove() const { return mCanRemove; }
     void wasKilled() { mWasKilled = true; }
     bool enemyKillHead() const { return mMovingVector.getLength() < mMinDistance; }
+    static void setNewSpeed(const float minSpeed, const float maxSpeed) { mMinSpeed = minSpeed, mMaxSpeed = maxSpeed; }
+    static float getMinSpeed() { return mMinSpeed; }
+    static float getMaxSpeed() { return mMaxSpeed; }
 protected:
     float mMinDistance;
     float mSpeed;
     bool  mCanRemove;
     bool  mWasKilled;
     
-    const float MIN_SPEED = 30.0f;
-    const float MAX_SPEED = 50.0f;
+    static float mMaxSpeed, mMinSpeed;
     
     const float TIME_TO_SHOW_EXLOSION = 1.0f;
     const float TIME_TO_SHOW_COIN     = 1.0f;
