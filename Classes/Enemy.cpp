@@ -9,8 +9,28 @@
 #include "Enemy.h"
 #include "cocos2d.h"
 
+
+EnemyFactory* EnemyFactory::mFactory = NULL;
+
 float Enemy::mMaxSpeed = 30.0f;
 float Enemy::mMinSpeed = 20.0f;
+
+
+EnemyFactory* EnemyFactory::getInstance() {
+    if (!mFactory) {
+        mFactory = new EnemyFactory();
+    }
+    return mFactory;
+}
+
+EnemyFactory::~EnemyFactory() {
+    if (mFactory)
+        delete mFactory;
+}
+
+Enemy* EnemyFactory::getNewEnemy(const std::string &name, const float minDistance) {
+    return new Enemy(name, minDistance);
+}
 
 Enemy::Enemy(const std::string& name, const float minDistance)
     :Entity(name)

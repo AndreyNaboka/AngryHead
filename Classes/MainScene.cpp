@@ -129,7 +129,7 @@ void MainScene::addEnemy(const int count) {
     for (int i = 0; i < count; ++i) {
         const float xPosition = (float)rand()/((float)RAND_MAX/(mVisibleSize.width));
         const float yPosition = 10.0f;
-        auto enemy = mEnemies.insert(mEnemies.end(), EnemyPtr(new Enemy("enemy", minDistanceToHead)));
+        auto enemy = mEnemies.insert(mEnemies.end(), EnemyPtr(EnemyFactory::getInstance()->getNewEnemy("enemy", minDistanceToHead)));
         (*enemy)->setMoveTo(xPosition, moveToY);
         (*enemy)->setPosition(xPosition, yPosition);
         addChild((*enemy)->getSprite());
