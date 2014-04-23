@@ -19,11 +19,20 @@ private:
     EnemyFactory(const EnemyFactory& rhs) {}
     EnemyFactory& operator=(const EnemyFactory& rhs);
 public:
+    virtual ~EnemyFactory();
     static EnemyFactory* getInstance();
     Enemy* getNewEnemy(const std::string& name, const float minDistance);
-    virtual ~EnemyFactory();
+    void removeEnemy(const std::string& enemyName);
+    
+    struct EnemyCoords {
+        float x;
+        float y;
+    };
 private:
     static EnemyFactory* mFactory;
+    typedef std::map<std::string, EnemyCoords> EnemiesPositionList;
+    typedef EnemiesPositionList::iterator EnemiesPositionListIterator;
+    EnemiesPositionList mEnemiesPosition;
 };
 
 class Enemy : public Entity {

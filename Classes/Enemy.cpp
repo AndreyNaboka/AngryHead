@@ -32,6 +32,12 @@ Enemy* EnemyFactory::getNewEnemy(const std::string &name, const float minDistanc
     return new Enemy(name, minDistance);
 }
 
+void EnemyFactory::removeEnemy(const std::string& enemyName) {
+    EnemiesPositionListIterator it = mEnemiesPosition.find(enemyName);
+    if (it != mEnemiesPosition.end())
+        mEnemiesPosition.erase(it);
+}
+
 Enemy::Enemy(const std::string& name, const float minDistance)
     :Entity(name)
     ,mMinDistance(minDistance)
