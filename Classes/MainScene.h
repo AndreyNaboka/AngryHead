@@ -36,6 +36,7 @@ private:
     void proceedTouches(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event *event);
     void hideLevelUp();
     void hideGameOver();
+    void getEnemyPosition(float& x, float& y, const float enemyWidth);
     
 private:
     EntityPtr mBackground;
@@ -49,7 +50,6 @@ private:
     EntityPtr mStartAfterUpgradeButton;
     EntityPtr mUpgradeBackground;
     cocos2d::Label* mUpgradeLabel;
-    
     
     GunPtr mGun;
     

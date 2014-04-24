@@ -11,32 +11,9 @@
 
 #include "Entity.h"
 
-class Enemy;
-
-class EnemyFactory {
-private:
-    EnemyFactory() {}
-    EnemyFactory(const EnemyFactory& rhs) {}
-    EnemyFactory& operator=(const EnemyFactory& rhs);
-public:
-    virtual ~EnemyFactory();
-    static EnemyFactory* getInstance();
-    Enemy* getNewEnemy(const std::string& name, const float minDistance);
-    void removeEnemy(const std::string& enemyName);
-    
-    struct EnemyCoords {
-        float x;
-        float y;
-    };
-private:
-    static EnemyFactory* mFactory;
-    typedef std::map<std::string, EnemyCoords> EnemiesPositionList;
-    typedef EnemiesPositionList::iterator EnemiesPositionListIterator;
-    EnemiesPositionList mEnemiesPosition;
-};
-
 class Enemy : public Entity {
 public:
+    Enemy(const std::string& name, const float minDistance);
     virtual void update(const float delta);
     virtual bool isCanRemove() const { return mCanRemove; }
     void wasKilled() { mWasKilled = true; }
@@ -44,13 +21,8 @@ public:
     static void setNewSpeed(const float minSpeed, const float maxSpeed) { mMinSpeed = minSpeed, mMaxSpeed = maxSpeed; }
     static float getMinSpeed() { return mMinSpeed; }
     static float getMaxSpeed() { return mMaxSpeed; }
-private:
-    Enemy(const std::string& name, const float minDistance);
-    Enemy();
-    Enemy(const Enemy&);
-    Enemy& operator=(const Enemy&);
     
-protected:
+private:
     float mMinDistance;
     float mSpeed;
     bool  mCanRemove;
@@ -73,8 +45,7 @@ protected:
         
         
     ENEMY_STATE mState;
-    
-    friend EnemyFactory;
+
 };
 
 typedef std::shared_ptr<Enemy> EnemyPtr;

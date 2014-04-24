@@ -123,16 +123,44 @@ void MainScene::showLevelUp() {
     addChild(mUpgradeLabel);
 }
 
+void MainScene::getEnemyPosition(float &x, float &y, const float enemyWidth) {
+    y = 10.0f;
+    bool positionFound = true;
+    int tryCounter = 0;
+    float farX = 0.0f;
+    do {
+        x = (float)rand()/((float)RAND_MAX/(mVisibleSize.width));
+        for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
+            const float distance = (*enemy)->getSprite()->getPosition().getDistance(cocos2d::Point(x,y));
+            if (distance < enemyWidth) {
+                if (farX < x) {
+                    std::cout << "Old farX : " << farX << ", new farX : " << x << std::endl;
+                    farX = x;
+                }
+                positionFound = false;
+                tryCounter++;
+                break;
+            }
+            
+        }
+        if (tryCounter >= 50) break;
+        
+    } while (!positionFound);
+    if (tryCounter >= 50)
+        x = farX;
+}
+
 void MainScene::addEnemy(const int count) {
     const float minDistanceToHead = 10.0f;
     const float moveToY = mOrigin.x + mVisibleSize.height;
     for (int i = 0; i < count; ++i) {
-        const float xPosition = (float)rand()/((float)RAND_MAX/(mVisibleSize.width));
-        const float yPosition = 10.0f;
-        auto enemy = mEnemies.insert(mEnemies.end(), EnemyPtr(EnemyFactory::getInstance()->getNewEnemy("enemy", minDistanceToHead)));
-        (*enemy)->setMoveTo(xPosition, moveToY);
-        (*enemy)->setPosition(xPosition, yPosition);
-        addChild((*enemy)->getSprite());
+        auto enemy = EnemyPtr(new Enemy("enemy", minDistanceToHead));
+        float xPosition, yPosition;
+        getEnemyPosition(xPosition, yPosition, std::max(enemy->getWidth(), enemy->getHeight()));
+        enemy->setPosition(xPosition, yPosition);
+        enemy->setMoveTo(xPosition, moveToY);
+        addChild(enemy->getSprite());
+        mEnemies.insert(mEnemies.end(), enemy);
     }
 }
 
