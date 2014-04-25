@@ -22,6 +22,8 @@ public:
     void removeBullete(const std::list<EntityPtr>::iterator& it);
     void setNewGunLevel(const int level);
     int getGunLevel() const { return mLevel; }
+    float getDamage() const { return mDamage; }
+    void setDamage(const float damage) { mDamage = damage; }
     
 private:
     void addNewBullets(const int count);
@@ -29,7 +31,7 @@ private:
     
 private:
     cocos2d::Layer* mParent;
-    
+    float mDamage;
     std::list<EntityPtr> mBullets;
     
     float mTimeToNextShoot;

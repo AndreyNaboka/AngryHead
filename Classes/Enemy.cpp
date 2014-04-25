@@ -69,3 +69,11 @@ void Enemy::update(const float delta) {
     const float newY = mY + (delta*mSpeed*movingVector.y);
     setPosition(newX, newY);
 }
+
+void Enemy::setLife(const float newLife) {
+    mLife = newLife;
+    if (mLife <= 0.0f) {
+        markForRemove();
+        mCanRemove = true;
+    }
+}

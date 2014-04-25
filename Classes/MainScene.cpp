@@ -41,7 +41,7 @@ void MainScene::checkCollisionEnemiesWithBullets() {
             
             if (bulletRightThanLeftLineEnemy && bulletLeftThanRightLineEnemy && bulletTopThanBottomLineEnemy && bulletBottomThanTopLineEnemy) {
                 (*bullet)->markForRemove();
-                (*enemy)->markForRemove();
+                (*enemy)->setLife((*enemy)->getLife()-mGun->getDamage());
                 (*enemy)->wasKilled();
                 mScore++;
                 updateScore();
@@ -159,7 +159,7 @@ void MainScene::addEnemy(const int count) {
         getEnemyPosition(xPosition, yPosition, std::max(enemy->getWidth(), enemy->getHeight()));
         enemy->setPosition(xPosition, yPosition);
         enemy->setMoveTo(xPosition, moveToY);
-        enemy->setLife(25.0f);  
+        enemy->setLife(50.0f);
         addChild(enemy->getSprite());
         mEnemies.insert(mEnemies.end(), enemy);
     }
@@ -340,6 +340,7 @@ void MainScene::createWorld() {
     const float gunPositionX = mEye->getPositionX();
     const float gunPositionY = mEye->getPositionY();
     mGun.reset(new Gun(this, gunShootToX, gunShootToY, gunPositionX, gunPositionY));
+    mGun->setDamage(25.0f);
     
     mScore = UserDefault::getInstance()->getIntegerForKey("Score");
     mGun->setNewGunLevel(UserDefault::getInstance()->getIntegerForKey("GunLevel"));
