@@ -159,6 +159,7 @@ void MainScene::addEnemy(const int count) {
         getEnemyPosition(xPosition, yPosition, std::max(enemy->getWidth(), enemy->getHeight()));
         enemy->setPosition(xPosition, yPosition);
         enemy->setMoveTo(xPosition, moveToY);
+        enemy->setLife(25.0f);  
         addChild(enemy->getSprite());
         mEnemies.insert(mEnemies.end(), enemy);
     }
