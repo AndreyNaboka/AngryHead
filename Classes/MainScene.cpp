@@ -154,12 +154,21 @@ void MainScene::addEnemy(const int count) {
     const float minDistanceToHead = 10.0f;
     const float moveToY = mOrigin.x + mVisibleSize.height;
     for (int i = 0; i < count; ++i) {
-        auto enemy = EnemyPtr(new Enemy("enemy", minDistanceToHead));
+        const float enemyLife = (rand() % 3 + 1) * 25.0f;
+        std::string enemyType;
+        if (enemyLife <= 25.0f)
+            enemyType = "enemy";
+        else if (enemyLife > 25.0f && enemyLife <= 50.0f)
+            enemyType = "enemy_mid";
+        else if (enemyLife > 50.0f)
+            enemyType = "enemy_hard";
+        
+        auto enemy = EnemyPtr(new Enemy(enemyType, minDistanceToHead));
         float xPosition, yPosition;
         getEnemyPosition(xPosition, yPosition, std::max(enemy->getWidth(), enemy->getHeight()));
         enemy->setPosition(xPosition, yPosition);
         enemy->setMoveTo(xPosition, moveToY);
-        enemy->setLife(50.0f);
+        enemy->setLife(enemyLife);
         addChild(enemy->getSprite());
         mEnemies.insert(mEnemies.end(), enemy);
     }
