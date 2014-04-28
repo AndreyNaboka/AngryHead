@@ -62,7 +62,7 @@ private:
     cocos2d::Label* mFireRateCostLabel;
 //    cocos2d::Label* mUpgradeLabel;
     
-    
+    bool mButtonPressed;
     
     GunPtr mGun;
     

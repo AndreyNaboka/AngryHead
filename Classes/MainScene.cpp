@@ -154,10 +154,8 @@ void MainScene::getEnemyPosition(float &x, float &y, const float enemyWidth) {
         for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
             const float distance = (*enemy)->getSprite()->getPosition().getDistance(cocos2d::Point(x,y));
             if (distance < enemyWidth) {
-                if (farX < x) {
-                    std::cout << "Old farX : " << farX << ", new farX : " << x << std::endl;
+                if (farX < x)
                     farX = x;
-                }
                 positionFound = false;
                 tryCounter++;
                 break;
@@ -205,6 +203,7 @@ void MainScene::onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, coco
 
 void MainScene::onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event* event) {
     proceedTouches(touches, event);
+    mButtonPressed = false;
 }
 
 void MainScene::hideGameOver() {
@@ -224,6 +223,8 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
             }
             break;
         case LEVEL_UP:
+            if (mButtonPressed) return;
+            mButtonPressed = true;
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
                 if (!(*touch) || !mUpgradeButton->getSprite() || !mStartAfterUpgradeButton->getSprite()) continue;
                 if (mStartAfterUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
@@ -235,12 +236,6 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
                     if (mScore < FIRE_RATE_COST) return;
                     mGun->setNewGunLevel(mGun->getGunLevel()+1);
                     mScore -= FIRE_RATE_COST;
-                    
-//                    char moneyLabelText[1024];
-//                    snprintf(moneyLabelText, 1024, "Upgrade speed: 20$. You have %i$", mScore);
-//                    mUpgradeLabel->setString(std::string(moneyLabelText));
-//                    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
-//                                               mOrigin.y + mVisibleSize.height/2);
                     
                     UserDefault::getInstance()->setIntegerForKey("GunLevel", mGun->getGunLevel());
                     
@@ -395,7 +390,8 @@ void MainScene::createWorld() {
     mScoreLabel->setAlignment(TextHAlignment::RIGHT);
     updateScore();
     addChild(mScoreLabel);
-    
+ 
+    mButtonPressed = true;
     
     auto listener = EventListenerTouchAllAtOnce::create();
     listener->onTouchesBegan=std::bind(&MainScene::onTouchesBegan, this, std::placeholders::_1, std::placeholders::_2);
