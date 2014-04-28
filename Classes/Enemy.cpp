@@ -74,6 +74,6 @@ void Enemy::setLife(const float newLife) {
     mLife = newLife;
     if (mLife <= 0.0f) {
         markForRemove();
-        mCanRemove = true;
+        wasKilled();
     }
 }

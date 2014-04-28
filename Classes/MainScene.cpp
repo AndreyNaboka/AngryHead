@@ -42,7 +42,6 @@ void MainScene::checkCollisionEnemiesWithBullets() {
             if (bulletRightThanLeftLineEnemy && bulletLeftThanRightLineEnemy && bulletTopThanBottomLineEnemy && bulletBottomThanTopLineEnemy) {
                 (*bullet)->markForRemove();
                 (*enemy)->setLife((*enemy)->getLife()-mGun->getDamage());
-                (*enemy)->wasKilled();
                 mScore++;
                 updateScore();
                 break;
