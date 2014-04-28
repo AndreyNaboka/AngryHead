@@ -4,6 +4,10 @@
 
 USING_NS_CC;
 
+const std::string MainScene::UP_GUN_DAMAGE      = "GunDamage";
+const std::string MainScene::UP_GUN_FIRE_RATE   = "GunFireRate";
+const std::string MainScene::UP_SCORE           = "Score";
+
 Scene* MainScene::createScene() {
     auto scene = Scene::create();
     auto layer = MainScene::create();
@@ -43,6 +47,8 @@ void MainScene::checkCollisionEnemiesWithBullets() {
                 (*bullet)->markForRemove();
                 const float currentEnemyLife = (*enemy)->getLife();
                 const float currentGunDamage = mGun->getDamage();
+
+                std::cout << "Collision with enemy " << (*enemy)->getID() << ", current life: " << (*enemy)->getLife() << ", new life: " << (currentEnemyLife - currentGunDamage) << ", gun damage: " << mGun->getDamage() << std::endl;
                 (*enemy)->setLife(currentEnemyLife - currentGunDamage);
                 mScore++;
                 updateScore();
@@ -135,6 +141,18 @@ void MainScene::showLevelUp() {
     mDamageCostLabel->setColor(cocos2d::Color3B(0.0,0.0,0.0));
     mDamageCostLabel->setPosition(mVisibleSize.width*0.28, mVisibleSize.height*0.72);
     
+    char fireRateLevel[64];
+    snprintf(fireRateLevel, 64, "%i", mGun->getFireRateLevel());
+    mFireRateLevelLabel = Label::create(std::string(fireRateLevel), "", 50);
+    mFireRateLevelLabel->setColor(cocos2d::Color3B(0.0,0.0,0.0));
+    mFireRateLevelLabel->setPosition(mVisibleSize.width - (mVisibleSize.width*0.28), mVisibleSize.height*0.35);
+    
+    char damageLevel[64];
+    snprintf(damageLevel, 64, "%i", mGun->getDamageLevel());
+    mDamageLevelLabel = Label::create(std::string(damageLevel), "", 50);
+    mDamageLevelLabel->setColor(cocos2d::Color3B(0.0,0.0,0.0));
+    mDamageLevelLabel->setPosition(mVisibleSize.width - (mVisibleSize.width*0.28), mVisibleSize.height*0.62);
+    
     addChild(mUpgradeBackground->getSprite());
     addChild(mUpgradeWindow->getSprite());
     addChild(mUpgradeButton->getSprite());
@@ -142,6 +160,8 @@ void MainScene::showLevelUp() {
     addChild(mUpgradeDamageButton->getSprite());
     addChild(mFireRateCostLabel);
     addChild(mDamageCostLabel);
+    addChild(mFireRateLevelLabel);
+    addChild(mDamageLevelLabel);
 }
 
 void MainScene::getEnemyPosition(float &x, float &y, const float enemyWidth) {
@@ -173,7 +193,7 @@ void MainScene::addEnemy(const int count) {
     const float minDistanceToHead = 10.0f;
     const float moveToY = mOrigin.x + mVisibleSize.height;
     for (int i = 0; i < count; ++i) {
-        const float enemyLife = (rand() % 3 + 1) * 25.0f;
+        const float enemyLife = (rand() % 3 + 1) * 50.0f;
         std::string enemyType;
         if (enemyLife <= 25.0f)
             enemyType = "enemy";
@@ -190,6 +210,7 @@ void MainScene::addEnemy(const int count) {
         enemy->setLife(enemyLife);
         addChild(enemy->getSprite());
         mEnemies.insert(mEnemies.end(), enemy);
+        std::cout << "Create enemy " << enemy->getID() << ", life " << enemyLife << std::endl;
     }
 }
 
@@ -234,21 +255,26 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
                 
                 if (mUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
                     if (mScore < FIRE_RATE_COST) return;
-                    mGun->setNewGunLevel(mGun->getGunLevel()+1);
+                    mGun->setFireRateLevel(mGun->getFireRateLevel()+1);
                     mScore -= FIRE_RATE_COST;
                     
-                    UserDefault::getInstance()->setIntegerForKey("GunLevel", mGun->getGunLevel());
-                    
+                    UserDefault::getInstance()->setIntegerForKey(UP_GUN_FIRE_RATE.c_str(), mGun->getFireRateLevel());
+                    char fireRateLevel[64];
+                    snprintf(fireRateLevel, 64, "%i", mGun->getFireRateLevel());
+                    mFireRateLevelLabel->setString(fireRateLevel);
                     updateScore();
                     break;
                 }
                 
                 if (mUpgradeDamageButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
                     if (mScore < DAMAGE_COST) return;
-                    mGun->setDamage(mGun->getDamage()+5);
-                    UserDefault::getInstance()->setIntegerForKey("GunDamage", mGun->getDamage());
+                    mGun->setDamageLevel(mGun->getDamageLevel()+1);
+                    UserDefault::getInstance()->setIntegerForKey(UP_GUN_DAMAGE.c_str(), mGun->getDamage());
                     mScore -= DAMAGE_COST;
                     updateScore();
+                    char damageLevel[64];
+                    snprintf(damageLevel, 64, "%i", mGun->getDamageLevel());
+                    mDamageLevelLabel->setString(damageLevel);
                     break;
                 }
             }
@@ -266,6 +292,8 @@ void MainScene::hideLevelUp() {
     removeChild(mUpgradeWindow->getSprite());
     removeChild(mFireRateCostLabel);
     removeChild(mDamageCostLabel);
+    removeChild(mFireRateLevelLabel);
+    removeChild(mDamageLevelLabel);
     
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
         removeChild((*enemy)->getSprite());
@@ -286,7 +314,8 @@ void MainScene::startNewGame() {
     mGameState = MAIN_GAME_STATE;
 
     mScore = 0;
-    mGun->setNewGunLevel(1);
+    mGun->setFireRateLevel(1);
+    mGun->setDamageLevel(1);
     
     updateScore();
 }
@@ -304,7 +333,7 @@ std::string MainScene::getScore() const {
 }
 
 void MainScene::updateScore() {
-    UserDefault::getInstance()->setIntegerForKey("Score", mScore);
+    UserDefault::getInstance()->setIntegerForKey(UP_SCORE.c_str(), mScore);
     mScoreLabel->setString(getScore());
     mScoreLabel->setPosition(mOrigin.x+mVisibleSize.width-mScoreLabel->getContentSize().width, mOrigin.y+mVisibleSize.height-mScoreLabel->getContentSize().height);
 }
@@ -377,12 +406,11 @@ void MainScene::createWorld() {
     const float gunPositionX = mEye->getPositionX();
     const float gunPositionY = mEye->getPositionY();
     mGun.reset(new Gun(this, gunShootToX, gunShootToY, gunPositionX, gunPositionY));
-    mGun->setDamage(25.0f);
     
-    mScore = UserDefault::getInstance()->getIntegerForKey("Score");
-    mGun->setNewGunLevel(UserDefault::getInstance()->getIntegerForKey("GunLevel"));
-    const int savedGunDamage = UserDefault::getInstance()->getIntegerForKey("GunDamage");
-    mGun->setDamage( savedGunDamage ? savedGunDamage : 25.0f );
+    mScore = UserDefault::getInstance()->getIntegerForKey(UP_SCORE.c_str());
+    mGun->setFireRateLevel(UserDefault::getInstance()->getIntegerForKey(UP_GUN_FIRE_RATE.c_str(), 1));
+    const int savedGunDamage = UserDefault::getInstance()->getIntegerForKey(UP_GUN_DAMAGE.c_str());
+    mGun->setDamageLevel( savedGunDamage ? savedGunDamage : 1 );
     
     auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
     mScoreLabel = cocos2d::Label::create(getScore(), fontFile, 40);

@@ -41,7 +41,6 @@ private:
 private:
     //
     // Level objects
-    //
     EntityPtr mBackground;
     EntityPtr mEarth;
     EntityPtr mHead;
@@ -52,7 +51,6 @@ private:
     
     //
     // Upgrade window objects
-    //
     EntityPtr mUpgradeButton;
     EntityPtr mStartAfterUpgradeButton;
     EntityPtr mUpgradeBackground;
@@ -60,12 +58,13 @@ private:
     EntityPtr mUpgradeDamageButton;
     cocos2d::Label* mDamageCostLabel;
     cocos2d::Label* mFireRateCostLabel;
-//    cocos2d::Label* mUpgradeLabel;
+    cocos2d::Label* mFireRateLevelLabel;
+    cocos2d::Label* mDamageLevelLabel;
     
-    bool mButtonPressed;
     
     GunPtr mGun;
     
+    bool mButtonPressed;
     size_t mMaxObjectsOnScene;
     cocos2d::Size mVisibleSize;
     cocos2d::Point mOrigin;
@@ -75,9 +74,15 @@ private:
     
     std::list<EnemyPtr> mEnemies;
     
-    static const int ENEMIES_COUNT = 10;
-    static const int FIRE_RATE_COST = 100;
-    static const int DAMAGE_COST = 100;
+    
+    //
+    // Main consts
+    static const int ENEMIES_COUNT   = 10;
+    static const int FIRE_RATE_COST  = 100;
+    static const int DAMAGE_COST     = 100;
+    static const std::string UP_GUN_DAMAGE;
+    static const std::string UP_GUN_FIRE_RATE;
+    static const std::string UP_SCORE;
     
     enum GAME_STATE {
         MAIN_GAME_STATE,

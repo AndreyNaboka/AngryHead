@@ -15,15 +15,25 @@
 class Gun {
 public:
     Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const float startX, const float startY);
-    void update(const float delta);
-    void setNewAim(const float x, const float y);
+    
+    //
+    // Common
+    void    update(const float delta);
+    void    setNewAim(const float x, const float y);
+    void    removeBullete(const std::list<EntityPtr>::iterator& it);
+    
+    //
+    // Fire power controls
+    void    setFireRateLevel(const int level);
+    int     getFireRateLevel() const             { return mFireRateLevel; }
+    float   getDamage() const                    { return DAMAGE_BASE * getDamageLevel(); }
+    int     getDamageLevel() const               { return mDamageLevel; }
+    void    setDamageLevel(const int level)      { mDamageLevel = level; }
+    
+    //
+    // Bullets controls
     std::list<EntityPtr>::iterator firstBullet() { return mBullets.begin(); }
     std::list<EntityPtr>::iterator endBullet()   { return mBullets.end(); }
-    void removeBullete(const std::list<EntityPtr>::iterator& it);
-    void setNewGunLevel(const int level);
-    int getGunLevel() const { return mLevel; }
-    float getDamage() const { return mDamage; }
-    void setDamage(const float damage) { mDamage = damage; }
     
 private:
     void addNewBullets(const int count);
@@ -31,15 +41,16 @@ private:
     
 private:
     cocos2d::Layer* mParent;
-    float mDamage;
     std::list<EntityPtr> mBullets;
-    
+
     float mTimeToNextShoot;
     float mAimX, mAimY;
     float mStartX, mStartY;
     float mSpeedPower;
-    int   mLevel;
+    int   mFireRateLevel;
+    int   mDamageLevel;
     
+    static const float DAMAGE_BASE;
     static const float SHOOT_INTERVAL;//    = 0.5f;
     static const float BASE_SPEED;//        = 3000.0f;
 };
