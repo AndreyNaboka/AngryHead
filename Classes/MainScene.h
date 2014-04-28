@@ -39,6 +39,9 @@ private:
     void getEnemyPosition(float& x, float& y, const float enemyWidth);
     
 private:
+    //
+    // Level objects
+    //
     EntityPtr mBackground;
     EntityPtr mEarth;
     EntityPtr mHead;
@@ -46,10 +49,20 @@ private:
     EntityPtr mPupil;
     EntityPtr mRay;
     
+    
+    //
+    // Upgrade window objects
+    //
     EntityPtr mUpgradeButton;
     EntityPtr mStartAfterUpgradeButton;
     EntityPtr mUpgradeBackground;
-    cocos2d::Label* mUpgradeLabel;
+    EntityPtr mUpgradeWindow;
+    EntityPtr mUpgradeDamageButton;
+    cocos2d::Label* mDamageCostLabel;
+    cocos2d::Label* mFireRateCostLabel;
+//    cocos2d::Label* mUpgradeLabel;
+    
+    
     
     GunPtr mGun;
     
@@ -63,7 +76,8 @@ private:
     std::list<EnemyPtr> mEnemies;
     
     static const int ENEMIES_COUNT = 10;
-    
+    static const int FIRE_RATE_COST = 100;
+    static const int DAMAGE_COST = 100;
     
     enum GAME_STATE {
         MAIN_GAME_STATE,

@@ -41,7 +41,9 @@ void MainScene::checkCollisionEnemiesWithBullets() {
             
             if (bulletRightThanLeftLineEnemy && bulletLeftThanRightLineEnemy && bulletTopThanBottomLineEnemy && bulletBottomThanTopLineEnemy) {
                 (*bullet)->markForRemove();
-                (*enemy)->setLife((*enemy)->getLife()-mGun->getDamage());
+                const float currentEnemyLife = (*enemy)->getLife();
+                const float currentGunDamage = mGun->getDamage();
+                (*enemy)->setLife(currentEnemyLife - currentGunDamage);
                 mScore++;
                 updateScore();
                 break;
@@ -97,29 +99,49 @@ void MainScene::showLevelUp() {
 
     updateScore();
     
-    mUpgradeButton.reset(new Entity("upgrade_text"));
-    mUpgradeButton->setPosition(mOrigin.x + (mUpgradeButton->getWidth()/2), mOrigin.y+mUpgradeButton->getHeight());
-    
-    mStartAfterUpgradeButton.reset(new Entity("start_after_upgrade_button"));
-    mStartAfterUpgradeButton->setPosition(mOrigin.x + mVisibleSize.width-(mStartAfterUpgradeButton->getWidth()/2),
-                                          mOrigin.y + mStartAfterUpgradeButton->getHeight());
-    
-    
+
     mUpgradeBackground.reset(new Entity("upgrade_background"));
     mUpgradeBackground->setScale(mVisibleSize.width/mUpgradeBackground->getWidth(), mVisibleSize.height/mUpgradeBackground->getHeight());
     mUpgradeBackground->setPosition(mOrigin.x+(mUpgradeBackground->getWidth()/2), mOrigin.y+(mUpgradeBackground->getHeight()/2));
     mUpgradeBackground->setOpacity(100);
+
+    mUpgradeWindow.reset(new Entity("upgrade_window"));
+    const float upgradeWindowWidthScaleFactor = (mVisibleSize.width/mUpgradeWindow->getWidth())*0.9;
+    const float upgradeWindowHeightScaleFactor = (mVisibleSize.height/mUpgradeWindow->getHeight())*0.8;
+    mUpgradeWindow->setScale(upgradeWindowWidthScaleFactor, upgradeWindowHeightScaleFactor);
+    mUpgradeWindow->setPosition(mVisibleSize.width/2, mVisibleSize.height/2);
     
-    char moneyLabelText[1024];
-    snprintf(moneyLabelText, 1024, "Upgrade speed: 20$. You have %i$", mScore);
-    mUpgradeLabel = Label::create(std::string(moneyLabelText), "", 40);
-    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
-                               mOrigin.y + mVisibleSize.height/2);
+    mStartAfterUpgradeButton.reset(new Entity("start_after_upgrade_button"));
+    mStartAfterUpgradeButton->setPosition(mOrigin.x + (mVisibleSize.width/2), mOrigin.y + mStartAfterUpgradeButton->getHeight()/2);
+
+    mUpgradeButton.reset(new Entity("upgrade_text"));
+    mUpgradeButton->setPosition(mVisibleSize.width*0.3, mVisibleSize.height*0.38);
+    mUpgradeButton->setScale(upgradeWindowWidthScaleFactor, upgradeWindowHeightScaleFactor);
+    
+    mUpgradeDamageButton.reset(new Entity("upgrade_damage"));
+    mUpgradeDamageButton->setPosition(mVisibleSize.width*0.3, mVisibleSize.height*0.65);
+    mUpgradeDamageButton->setScale(upgradeWindowWidthScaleFactor, upgradeWindowHeightScaleFactor);
+    
+    
+    char fireRateCost[512];
+    snprintf(fireRateCost, 512, "%i$", FIRE_RATE_COST);
+    mFireRateCostLabel = Label::create(std::string(fireRateCost), "", 50);
+    mFireRateCostLabel->setColor(cocos2d::Color3B(0.0,0.0,0.0));
+    mFireRateCostLabel->setPosition(mVisibleSize.width*0.28, mVisibleSize.height*0.45);
+    
+    char damageCost[512];
+    snprintf(damageCost, 512, "%i$", DAMAGE_COST);
+    mDamageCostLabel = Label::create(std::string(damageCost), "", 50);
+    mDamageCostLabel->setColor(cocos2d::Color3B(0.0,0.0,0.0));
+    mDamageCostLabel->setPosition(mVisibleSize.width*0.28, mVisibleSize.height*0.72);
     
     addChild(mUpgradeBackground->getSprite());
+    addChild(mUpgradeWindow->getSprite());
     addChild(mUpgradeButton->getSprite());
     addChild(mStartAfterUpgradeButton->getSprite());
-    addChild(mUpgradeLabel);
+    addChild(mUpgradeDamageButton->getSprite());
+    addChild(mFireRateCostLabel);
+    addChild(mDamageCostLabel);
 }
 
 void MainScene::getEnemyPosition(float &x, float &y, const float enemyWidth) {
@@ -210,18 +232,27 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
                 }
                 
                 if (mUpgradeButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
-                    if (mScore < 20) return;
+                    if (mScore < FIRE_RATE_COST) return;
                     mGun->setNewGunLevel(mGun->getGunLevel()+1);
-                    mScore -= 20;
+                    mScore -= FIRE_RATE_COST;
                     
-                    char moneyLabelText[1024];
-                    snprintf(moneyLabelText, 1024, "Upgrade speed: 20$. You have %i$", mScore);
-                    mUpgradeLabel->setString(std::string(moneyLabelText));
-                    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
-                                               mOrigin.y + mVisibleSize.height/2);
+//                    char moneyLabelText[1024];
+//                    snprintf(moneyLabelText, 1024, "Upgrade speed: 20$. You have %i$", mScore);
+//                    mUpgradeLabel->setString(std::string(moneyLabelText));
+//                    mUpgradeLabel->setPosition(mOrigin.x + mVisibleSize.width/2-(mUpgradeLabel->getWidth()/2),
+//                                               mOrigin.y + mVisibleSize.height/2);
                     
                     UserDefault::getInstance()->setIntegerForKey("GunLevel", mGun->getGunLevel());
                     
+                    updateScore();
+                    break;
+                }
+                
+                if (mUpgradeDamageButton->getSprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
+                    if (mScore < DAMAGE_COST) return;
+                    mGun->setDamage(mGun->getDamage()+5);
+                    UserDefault::getInstance()->setIntegerForKey("GunDamage", mGun->getDamage());
+                    mScore -= DAMAGE_COST;
                     updateScore();
                     break;
                 }
@@ -235,8 +266,11 @@ void MainScene::proceedTouches(const std::vector<cocos2d::Touch *> &touches, coc
 void MainScene::hideLevelUp() {
     removeChild(mUpgradeButton->getSprite());
     removeChild(mStartAfterUpgradeButton->getSprite());
-    removeChild(mUpgradeLabel);
+    removeChild(mUpgradeDamageButton->getSprite());
     removeChild(mUpgradeBackground->getSprite());
+    removeChild(mUpgradeWindow->getSprite());
+    removeChild(mFireRateCostLabel);
+    removeChild(mDamageCostLabel);
     
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
         removeChild((*enemy)->getSprite());
@@ -282,7 +316,7 @@ void MainScene::updateScore() {
 
 void MainScene::gameOver() {
     mGameState = GAME_OVER;
-    auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
+    auto fontFile = FileUtils::getInstance()->fullPathForFilename("Marker Felt");
     char byebyeText[1024];
     snprintf(byebyeText, 1024, "You are dead, you kill %i enemy. Touch screen to upgrade and restart", mScore);
 
@@ -352,6 +386,8 @@ void MainScene::createWorld() {
     
     mScore = UserDefault::getInstance()->getIntegerForKey("Score");
     mGun->setNewGunLevel(UserDefault::getInstance()->getIntegerForKey("GunLevel"));
+    const int savedGunDamage = UserDefault::getInstance()->getIntegerForKey("GunDamage");
+    mGun->setDamage( savedGunDamage ? savedGunDamage : 25.0f );
     
     auto fontFile = FileUtils::getInstance()->fullPathForFilename("fonts/Marker Felt");
     mScoreLabel = cocos2d::Label::create(getScore(), fontFile, 40);
@@ -368,15 +404,13 @@ void MainScene::createWorld() {
     Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(listener, 100);
     
     mMaxObjectsOnScene = 0;
+    mDamageCostLabel = NULL;
+    mFireRateCostLabel = NULL;
     
     srand(static_cast<unsigned int>(time(0)));
     schedule(schedule_selector(MainScene::update));
     
     addEnemy(ENEMIES_COUNT);
     
-    mLastLabel = NULL;
-    mUpgradeButton = NULL;
-    mUpgradeLabel = NULL;
-    mStartAfterUpgradeButton = NULL;
     showLevelUp();
 }

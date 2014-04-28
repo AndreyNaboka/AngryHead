@@ -21,6 +21,7 @@ Gun::Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const
     ,mParent(parent)
     ,mSpeedPower(500.0f)
     ,mLevel(1)
+    ,mDamage(25.0f)
 {
     addNewBullets(1);
 }
