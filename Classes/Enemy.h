@@ -23,6 +23,7 @@ public:
     static float getMaxSpeed() { return mMaxSpeed; }
     float getLife() const { return mLife; }
     void setLife(const float newLife);
+    
 private:
     float mMinDistance;
     float mSpeed;
