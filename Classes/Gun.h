@@ -20,7 +20,7 @@ public:
     // Common
     void    update(const float delta);
     void    setNewAim(const float x, const float y);
-    void    removeBullete(const std::list<EntityPtr>::iterator& it);
+    void    removeBullets(const std::list<EntityPtr>::iterator& it);
     
     //
     // Fire power controls

@@ -75,7 +75,7 @@ void MainScene::removeObjectsFromScene() {
             (*bullet)->getPositionX() <= 10.0f ||
             (*bullet)->getPositionY() > mVisibleSize.height ||
             (*bullet)->getPositionY() <= 10.0f)
-            mGun->removeBullete(bullet);
+            mGun->removeBullets(bullet);
     }
 }
 

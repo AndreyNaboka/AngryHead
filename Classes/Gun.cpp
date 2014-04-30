@@ -63,7 +63,7 @@ void Gun::setNewAim(const float x, const float y) {
     mAimY = y;
 }
 
-void Gun::removeBullete(const std::list<EntityPtr>::iterator &it) {
+void Gun::removeBullets(const std::list<EntityPtr>::iterator &it) {
     mParent->removeChild((*it)->getSprite());
     mBullets.erase(it);
 }
