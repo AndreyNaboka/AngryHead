@@ -49,9 +49,10 @@ private:
     float mSpeedPower;
     int   mFireRateLevel;
     int   mDamageLevel;
+    float mShootInterval;
     
+    static const float SHOOT_INTERVAL_STEP;
     static const float DAMAGE_BASE;
-    static const float SHOOT_INTERVAL;//    = 0.5f;
     static const float BASE_SPEED;//        = 3000.0f;
 };
 

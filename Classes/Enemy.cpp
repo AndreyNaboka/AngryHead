@@ -9,12 +9,6 @@
 #include "Enemy.h"
 #include "cocos2d.h"
 
-
-
-float Enemy::mMaxSpeed = 30.0f;
-float Enemy::mMinSpeed = 20.0f;
-
-
 Enemy::Enemy(const std::string& name, const float minDistance)
     :Entity(name)
     ,mMinDistance(minDistance)
@@ -23,8 +17,8 @@ Enemy::Enemy(const std::string& name, const float minDistance)
     ,mState(NORMAL)
     ,mCanRemove(false)
     ,mWasKilled(false)
+    ,mSpeed(0.0f)
 {
-    mSpeed = mMinSpeed + (float)rand()/((float)RAND_MAX/(mMaxSpeed-mMinSpeed));
 }
 
 void Enemy::update(const float delta) {
@@ -76,4 +70,8 @@ void Enemy::setLife(const float newLife) {
         markForRemove();
         wasKilled();
     }
+}
+
+void Enemy::setSpeed(const float speed) {
+    mSpeed = speed;
 }

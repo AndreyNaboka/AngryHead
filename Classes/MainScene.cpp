@@ -47,11 +47,8 @@ void MainScene::checkCollisionEnemiesWithBullets() {
                 (*bullet)->markForRemove();
                 const float currentEnemyLife = (*enemy)->getLife();
                 const float currentGunDamage = mGun->getDamage();
-
-                std::cout << "Collision with enemy " << (*enemy)->getID() << ", current life: " << (*enemy)->getLife() << ", new life: " << (currentEnemyLife - currentGunDamage) << ", gun damage: " << mGun->getDamage() << std::endl;
+                
                 (*enemy)->setLife(currentEnemyLife - currentGunDamage);
-                mScore++;
-                updateScore();
                 break;
             }
         }
@@ -65,6 +62,8 @@ void MainScene::removeObjectsFromScene() {
             removeChild((*enemy)->getSprite());
             mEnemies.erase(enemy);
             addEnemiesCount++;
+            mScore++;
+            updateScore();
         }
     }
     addEnemy(addEnemiesCount);
@@ -195,12 +194,17 @@ void MainScene::addEnemy(const int count) {
     for (int i = 0; i < count; ++i) {
         const float enemyLife = (rand() % 3 + 1) * ENEMY_BASE_LIFE;
         std::string enemyType;
-        if (enemyLife <= ENEMY_BASE_LIFE)
+        float enemySpeed = 0.0f;
+        if (enemyLife <= ENEMY_BASE_LIFE) {
             enemyType = "enemy";
-        else if (enemyLife > ENEMY_BASE_LIFE && enemyLife <= ENEMY_BASE_LIFE*2)
+            enemySpeed = 40.0f;
+        } else if (enemyLife > ENEMY_BASE_LIFE && enemyLife <= ENEMY_BASE_LIFE*2) {
             enemyType = "enemy_mid";
-        else if (enemyLife > ENEMY_BASE_LIFE*2)
+            enemySpeed = 30.0f;
+        } else if (enemyLife > ENEMY_BASE_LIFE*2) {
             enemyType = "enemy_hard";
+            enemySpeed = 20.0f;
+        }
         
         auto enemy = EnemyPtr(new Enemy(enemyType, minDistanceToHead));
         float xPosition, yPosition;
@@ -208,6 +212,7 @@ void MainScene::addEnemy(const int count) {
         enemy->setPosition(xPosition, yPosition);
         enemy->setMoveTo(xPosition, moveToY);
         enemy->setLife(enemyLife);
+        enemy->setSpeed(enemySpeed);
         addChild(enemy->getSprite());
         mEnemies.insert(mEnemies.end(), enemy);
         std::cout << "Create enemy " << enemy->getID() << ", life " << enemyLife << std::endl;

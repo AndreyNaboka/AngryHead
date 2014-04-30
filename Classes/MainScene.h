@@ -80,7 +80,7 @@ private:
     static const int ENEMIES_COUNT   = 10;
     static const int FIRE_RATE_COST  = 100;
     static const int DAMAGE_COST     = 100;
-    static const int ENEMY_BASE_LIFE = 50;
+    static const int ENEMY_BASE_LIFE = 25;
     static const std::string UP_GUN_DAMAGE;
     static const std::string UP_GUN_FIRE_RATE;
     static const std::string UP_SCORE;

@@ -9,21 +9,20 @@
 #include "Gun.h"
 #include <iostream>
 
-const float Gun::SHOOT_INTERVAL = 0.5f;
-const float Gun::BASE_SPEED     = 1000.0f;
+const float Gun::BASE_SPEED     = 1250.0f;
 const float Gun::DAMAGE_BASE    = 25.0f;
-
+const float Gun::SHOOT_INTERVAL_STEP = 0.05f;
 
 Gun::Gun(cocos2d::Layer* const parent, const float aimX, const float aimY, const float startX, const float startY)
-    :mTimeToNextShoot(SHOOT_INTERVAL)
-    ,mAimX(aimX)
+    :mAimX(aimX)
     ,mAimY(aimY)
     ,mStartX(startX)
     ,mStartY(startY)
     ,mParent(parent)
-    ,mSpeedPower(500.0f)
     ,mFireRateLevel(1)
+    ,mShootInterval(0.5)
 {
+    mTimeToNextShoot = mShootInterval;
     addNewBullets(1);
 }
 
@@ -31,7 +30,7 @@ void Gun::update(const float delta) {
     mTimeToNextShoot -= delta;
     if (mTimeToNextShoot <= 0.0f) {
         addNewBullets(1);
-        mTimeToNextShoot = SHOOT_INTERVAL;
+        mTimeToNextShoot = mShootInterval - (getFireRateLevel()*SHOOT_INTERVAL_STEP);
     }
     updateBullets(delta);
 }
@@ -43,8 +42,8 @@ void Gun::updateBullets(const float delta) {
         float angle = M_PI_2 - atan2f(diffVector.x,diffVector.y);
         cocos2d::Point directionVector = cocos2d::Point(cosf(-1*angle), sinf(-1*angle));
         directionVector.normalize();
-        float newX = (*bullet)->getPositionX() - (delta*(BASE_SPEED+mSpeedPower)*directionVector.x);
-        float newY = (*bullet)->getPositionY() + (delta*(BASE_SPEED+mSpeedPower)*directionVector.y);
+        float newX = (*bullet)->getPositionX() - ((delta*BASE_SPEED)*directionVector.x);
+        float newY = (*bullet)->getPositionY() + ((delta*BASE_SPEED)*directionVector.y);
         (*bullet)->setPosition(newX,newY);
     }
 }
@@ -70,5 +69,4 @@ void Gun::removeBullets(const std::list<EntityPtr>::iterator &it) {
 
 void Gun::setFireRateLevel(const int level) {
     mFireRateLevel = level;
-    mSpeedPower = 500.0f * mFireRateLevel;
 }
