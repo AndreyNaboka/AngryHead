@@ -73,14 +73,15 @@ private:
     unsigned int m_score;
     
     std::list<enemy_ptr> m_enemies;
-    
+    enemy_ptr m_selected_enemy;
+    entity_ptr m_selected_enemy_aim;
     
     //
     // Main consts
     static const int ENEMIES_COUNT   = 7;
     static const int FIRE_RATE_COST  = 100;
     static const int DAMAGE_COST     = 100;
-    static const int ENEMY_BASE_LIFE = 25;
+    static const int ENEMY_BASE_LIFE = 60;
     static const std::string UP_GUN_DAMAGE;
     static const std::string UP_GUN_FIRE_RATE;
     static const std::string UP_SCORE;

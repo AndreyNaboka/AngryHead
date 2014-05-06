@@ -34,6 +34,14 @@ void main_scene::update_game_objects(const float delta) {
         }
     }
     
+    if (m_selected_enemy) {
+        Point selected_enemy_pos = Point(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y()+(m_selected_enemy->get_height()/2));
+        rotate_ray(selected_enemy_pos);
+        m_gun->set_new_aim(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y()+(m_selected_enemy->get_height()/2));
+        m_selected_enemy_aim->set_position(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y());
+        m_selected_enemy_aim->set_scale(m_selected_enemy->get_scale());
+    }
+    
     
     m_gun->update(delta);
     
@@ -83,6 +91,12 @@ void main_scene::remove_objects_from_scene() {
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
         if ((*enemy)->is_mark_for_remove()) {
             std::cout << "\tenemy " << (*enemy)->get_id() << " is mark for remove" << std::endl;
+        
+            if (m_selected_enemy && (*enemy)->get_id() == m_selected_enemy->get_id()) {
+                m_selected_enemy.reset();
+                m_selected_enemy_aim->set_position(-1000.0f, -1000.0f);
+            }
+            
             removeChild((*enemy)->get_sprite());
             m_enemies.erase(enemy);
             add_enemies_count++;
@@ -222,15 +236,19 @@ void main_scene::add_enemy(const int count) {
         const float enemy_life = (rand() % 3 + 1) * ENEMY_BASE_LIFE;
         std::string enemy_type;
         float enemy_speed = 0.0f;
+        float enemy_scale_factor = 1.0f;
         if (enemy_life <= ENEMY_BASE_LIFE) {
             enemy_type = "enemy";
-            enemy_speed = 40.0f;
+            enemy_speed = 70.0f;
+            enemy_scale_factor = 0.5f;
         } else if (enemy_life > ENEMY_BASE_LIFE && enemy_life <= ENEMY_BASE_LIFE*2) {
             enemy_type = "enemy_mid";
-            enemy_speed = 30.0f;
+            enemy_speed = 60.0f;
+            enemy_scale_factor = 1.0f;
         } else if (enemy_life > ENEMY_BASE_LIFE*2) {
             enemy_type = "enemy_hard";
-            enemy_speed = 20.0f;
+            enemy_speed = 45.0f;
+            enemy_scale_factor = 1.5f;
         }
         
         auto new_enemy = enemy_ptr(new enemy(enemy_type, min_distance_to_head));
@@ -240,6 +258,7 @@ void main_scene::add_enemy(const int count) {
         new_enemy->set_move_to(x_position, move_to_y);
         new_enemy->set_life(enemy_life);
         new_enemy->set_speed(enemy_speed);
+        new_enemy->set_scale(enemy_scale_factor);
         addChild(new_enemy->get_sprite());
         m_enemies.insert(m_enemies.end(), new_enemy);
         std::cout << "Add new enemy " << new_enemy->get_id() << ", type: " << enemy_type << std::endl;
@@ -271,6 +290,16 @@ void main_scene::proceed_touches(const std::vector<cocos2d::Touch *> &touches, c
             break;
         case MAIN_GAME_STATE:
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
+                
+                for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
+                    if ((*enemy)->is_mark_for_remove() || (*enemy)->is_was_killed()) continue;
+                    
+                    if ((*enemy)->get_sprite()->getBoundingBox().containsPoint((*touch)->getLocation())) {
+                        m_selected_enemy = (*enemy);
+                        break;
+                    }
+                }
+                
                 m_gun->set_new_aim((*touch)->getLocation().x, (*touch)->getLocation().y);
                 rotate_ray((*touch)->getLocation());
             }
@@ -452,6 +481,11 @@ void main_scene::create_world() {
     addChild(m_score_label);
  
     m_button_pressed = false;
+
+    m_selected_enemy_aim.reset(new entity("round"));
+    m_selected_enemy_aim->set_position(-1000.0f, -1000.0f);
+    addChild(m_selected_enemy_aim->get_sprite());
+    
     
     auto listener = EventListenerTouchAllAtOnce::create();
     listener->onTouchesBegan=std::bind(&main_scene::onTouchesBegan, this, std::placeholders::_1, std::placeholders::_2);

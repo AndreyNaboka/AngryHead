@@ -20,6 +20,7 @@ public:
     virtual void       update(const float delta);
     void               set_scale(const float x, const float y);
     void               set_scale(const float scale);
+    float              get_scale() const                          { return m_sprite->getScale(); }
     void               set_position(const float x, const float y);
     float              get_width() const;
     float              get_height() const;
