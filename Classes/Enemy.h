@@ -14,18 +14,17 @@
 class Enemy : public Entity {
 public:
     Enemy(const std::string& name, const float minDistance);
-    virtual void update(const float delta);
-    virtual bool isCanRemove() const { return mCanRemove; }
-    void wasKilled() { mWasKilled = true; }
-    bool enemyKillHead() const { return mMovingVector.getLength() < mMinDistance; }
-    float getLife() const { return mLife; }
-    void setLife(const float newLife);
-    void setSpeed(const float speed);
-    float getSpeed() const { return mSpeed; }
+    virtual void   update(const float delta);
+    void           wasKilled()                   { mWasKilled = true; }
+    bool           isWasKilled() const           { return mWasKilled; }
+    float          getSpeed() const              { return mSpeed; }
+    float          getLife() const               { return mLife; }
+    void           setLife(const float newLife);
+    void           setSpeed(const float speed);
+
 private:
     float mMinDistance;
     float mSpeed;
-    bool  mCanRemove;
     bool  mWasKilled;
     float mLife;
     

@@ -21,55 +21,72 @@ bool MainScene::init() {
 }
 
 void MainScene::updateGameObjects(const float delta) {
-    for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy)
-        (*enemy)->update(delta);
-    
-    mGun->update(delta);
-    
+    std::cout << "Start update game objects" << std::endl;
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
-        if ((*enemy)->enemyKillHead())
+        std::cout << "\tupdate enemy " << (*enemy)->getID() << std::endl;
+        (*enemy)->update(delta);
+        if ((*enemy)->getPositionY() > mOrigin.y + mVisibleSize.height - 10.0f) {
+            std::cout << "\tenemy " << (*enemy)->getID() << " kill head, gameOver()" << std::endl;
+            (*enemy)->markForRemove();
             gameOver();
+            return;
+        }
     }
+    
+    std::cout << "\tGun update" << std::endl;
+    mGun->update(delta);
+    std::cout << "End update game objects";
 }
 
 void MainScene::checkCollisionEnemiesWithBullets() {
+    std::cout << "Start check collision enemies with bullets" << std::endl;
     for (auto bullet = mGun->firstBullet(); bullet != mGun->endBullet(); ++bullet) {
+        std::cout << "\tcheck bullet " << (*bullet)->getID() << std::endl;
         for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
+            std::cout << "\tcheck enemy " << (*enemy)->getID() << std::endl;
+            if ((*enemy)->isMarkForRemove() || (*enemy)->isWasKilled()) {
+                std::cout << "\tenemy" << (*enemy)->getID() << " already mark for remove, continue" << std::endl;
+                continue;
+            }
             
-            if ((*enemy)->isMarkForRemove()) continue;
-            
-            const bool bulletRightThanLeftLineEnemy = (*bullet)->getPositionX() > (*enemy)->getPositionX()-(*enemy)->getWidth()/2;
-            const bool bulletLeftThanRightLineEnemy = (*bullet)->getPositionX() < (*enemy)->getPositionX()+(*enemy)->getWidth()/2;
-            const bool bulletTopThanBottomLineEnemy = (*bullet)->getPositionY() > (*enemy)->getPositionY()-(*enemy)->getHeight()/2;
-            const bool bulletBottomThanTopLineEnemy = (*bullet)->getPositionY() < (*enemy)->getPositionY()+(*enemy)->getHeight()/2;
-            
-            if (bulletRightThanLeftLineEnemy && bulletLeftThanRightLineEnemy && bulletTopThanBottomLineEnemy && bulletBottomThanTopLineEnemy) {
+            const bool isBulletIntersectEnemy = (*bullet)->getPositionX() > (*enemy)->getPositionX()-(*enemy)->getWidth()/2 &&
+                                                (*bullet)->getPositionX() < (*enemy)->getPositionX()+(*enemy)->getWidth()/2 &&
+                                                (*bullet)->getPositionY() > (*enemy)->getPositionY()-(*enemy)->getHeight()/2 &&
+                                                (*bullet)->getPositionY() < (*enemy)->getPositionY()+(*enemy)->getHeight()/2;
+            if (isBulletIntersectEnemy) {
+                std::cout << "\tBullet " << (*bullet)->getID() << " intersect with enemy " << (*enemy)->getID() << std::endl;
                 (*bullet)->markForRemove();
-                const float currentEnemyLife = (*enemy)->getLife();
-                const float currentGunDamage = mGun->getDamage();
-                
-                (*enemy)->setLife(currentEnemyLife - currentGunDamage);
+                std::cout << "\tBullet " << (*bullet)->getID() << " mark for remove" << std::endl;
+                std::cout << "\tEnemy " << (*enemy)->getID() << " current life: " << (*enemy)->getLife() << std::endl;
+                (*enemy)->setLife((*enemy)->getLife() - mGun->getDamage());
+                std::cout << "\tEnemy " << (*enemy)->getID() << " new life: " << (*enemy)->getLife() << std::endl;
                 break;
             }
         }
     }
+    std::cout << "End check collision enemies with bullets" << std::endl;
 }
 
 void MainScene::removeObjectsFromScene() {
+    std::cout << "Start remove objects from scene" << std::endl;
     unsigned int addEnemiesCount = 0;
     for (auto enemy = mEnemies.begin(); enemy != mEnemies.end(); ++enemy) {
-        if ((*enemy)->isMarkForRemove() && (*enemy)->isCanRemove()) {
+        if ((*enemy)->isMarkForRemove()) {
+            std::cout << "\tenemy " << (*enemy)->getID() << " is mark for remove" << std::endl;
             removeChild((*enemy)->getSprite());
             mEnemies.erase(enemy);
             addEnemiesCount++;
             mScore++;
-            updateScore();
+        } else {
+            std::cout << "\tenemy " << (*enemy)->getID() << " not mark for remove" << std::endl;
         }
     }
+    std::cout << "End remove objects from scene" << std::endl;
+    updateScore();
     addEnemy(addEnemiesCount);
     
     for (auto bullet = mGun->firstBullet(); bullet != mGun->endBullet(); ++bullet) {
-        if (((*bullet)->isMarkForRemove() && (*bullet)->isCanRemove()) ||
+        if (((*bullet)->isMarkForRemove()) ||
             (*bullet)->getPositionX() > mVisibleSize.width ||
             (*bullet)->getPositionX() <= 10.0f ||
             (*bullet)->getPositionY() > mVisibleSize.height ||
@@ -89,9 +106,7 @@ void MainScene::update(const float delta) {
             removeObjectsFromScene();
             break;
         case LEVEL_UP:
-            break;
         case GAME_OVER:
-            break;
         default:
             break;
     }
@@ -215,7 +230,7 @@ void MainScene::addEnemy(const int count) {
         enemy->setSpeed(enemySpeed);
         addChild(enemy->getSprite());
         mEnemies.insert(mEnemies.end(), enemy);
-        std::cout << "Create enemy " << enemy->getID() << ", life " << enemyLife << std::endl;
+        std::cout << "Add new enemy " << enemy->getID() << ", type: " << enemyType << std::endl;
     }
 }
 

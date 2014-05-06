@@ -15,14 +15,13 @@ Enemy::Enemy(const std::string& name, const float minDistance)
     ,mTimeToShowCoin(TIME_TO_SHOW_COIN)
     ,mTimeToShowExplosion(TIME_TO_SHOW_EXLOSION)
     ,mState(NORMAL)
-    ,mCanRemove(false)
     ,mWasKilled(false)
     ,mSpeed(0.0f)
 {
 }
 
 void Enemy::update(const float delta) {
-    if (isMarkForRemove() && mWasKilled) {
+    if (mWasKilled) {
         if (mTimeToShowExplosion > 0.0f) {
             mTimeToShowExplosion -= delta;
             
@@ -46,7 +45,7 @@ void Enemy::update(const float delta) {
             setOpacity(newOpacity);
             
         } else if (mTimeToShowCoin <= 0.0f && mTimeToShowCoin <= 0.0f) {
-            mCanRemove = true;
+            markForRemove();
         }
         return;
     }
@@ -54,20 +53,17 @@ void Enemy::update(const float delta) {
     mMovingVector = cocos2d::Point(mMoveToX-mX, mMoveToY-mY);
     if (mMovingVector.getLength()==0) {
         markForRemove();
-        mCanRemove = true;
-        return;
+    } else {    
+        cocos2d::Point movingVector = mMovingVector/mMovingVector.getLength();
+        const float newX = mX + (delta*mSpeed*movingVector.x);
+        const float newY = mY + (delta*mSpeed*movingVector.y);
+        setPosition(newX, newY);
     }
-    
-    cocos2d::Point movingVector = mMovingVector/mMovingVector.getLength();
-    const float newX = mX + (delta*mSpeed*movingVector.x);
-    const float newY = mY + (delta*mSpeed*movingVector.y);
-    setPosition(newX, newY);
 }
 
 void Enemy::setLife(const float newLife) {
     mLife = newLife;
     if (mLife <= 0.0f) {
-        markForRemove();
         wasKilled();
     }
 }

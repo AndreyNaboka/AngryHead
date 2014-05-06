@@ -77,7 +77,7 @@ private:
     
     //
     // Main consts
-    static const int ENEMIES_COUNT   = 10;
+    static const int ENEMIES_COUNT   = 7;
     static const int FIRE_RATE_COST  = 100;
     static const int DAMAGE_COST     = 100;
     static const int ENEMY_BASE_LIFE = 25;
