@@ -81,7 +81,7 @@ private:
     static const int ENEMIES_COUNT   = 7;
     static const int FIRE_RATE_COST  = 100;
     static const int DAMAGE_COST     = 100;
-    static const int ENEMY_BASE_LIFE = 60;
+    static const int ENEMY_BASE_LIFE = 40;
     static const std::string UP_GUN_DAMAGE;
     static const std::string UP_GUN_FIRE_RATE;
     static const std::string UP_SCORE;
@@ -91,6 +91,8 @@ private:
         GAME_OVER,
         LEVEL_UP
     };
+    
+    bool m_update_objects_now;
     
     GAME_STATE m_game_state;
 };

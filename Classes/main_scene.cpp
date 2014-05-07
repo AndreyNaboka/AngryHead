@@ -23,28 +23,35 @@ void main_scene::update_game_objects(const float delta) {
     
     std::cout << "Start update game objects" << std::endl;
     
+    m_update_objects_now = true;
+    
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
         std::cout << "\tupdate enemy " << (*enemy)->get_id() << std::endl;
         (*enemy)->update(delta);
         if ((*enemy)->get_position_y() > m_origin.y + m_visible_size.height - 10.0f) {
             std::cout << "\tenemy " << (*enemy)->get_id() << " kill head, gameOver()" << std::endl;
             (*enemy)->mark_for_remove();
+            if ((*enemy)->get_id() == m_selected_enemy_aim->get_id()) {
+                m_selected_enemy_aim.reset();
+                m_selected_enemy_aim->set_position(-1000.0f, -1000.0f);
+            }
             game_over();
             return;
         }
     }
     
     if (m_selected_enemy) {
-        Point selected_enemy_pos = Point(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y()+(m_selected_enemy->get_height()/2));
+        Point selected_enemy_pos = Point(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y());
         rotate_ray(selected_enemy_pos);
-        m_gun->set_new_aim(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y()+(m_selected_enemy->get_height()/2));
+        m_gun->set_new_aim(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y());
         m_selected_enemy_aim->set_position(m_selected_enemy->get_position_x(), m_selected_enemy->get_position_y());
-        m_selected_enemy_aim->set_scale(m_selected_enemy->get_scale());
+        m_selected_enemy_aim->set_scale(m_selected_enemy->get_scale()*1.2);
     }
     
     
     m_gun->update(delta);
     
+    m_update_objects_now = false;
     
     std::cout << "\tGun update" << std::endl;
     std::cout << "End update game objects";
@@ -239,15 +246,15 @@ void main_scene::add_enemy(const int count) {
         float enemy_scale_factor = 1.0f;
         if (enemy_life <= ENEMY_BASE_LIFE) {
             enemy_type = "enemy";
-            enemy_speed = 70.0f;
-            enemy_scale_factor = 0.5f;
+            enemy_speed = 60.0f;
+            enemy_scale_factor = 0.65f;
         } else if (enemy_life > ENEMY_BASE_LIFE && enemy_life <= ENEMY_BASE_LIFE*2) {
             enemy_type = "enemy_mid";
-            enemy_speed = 60.0f;
+            enemy_speed = 50.0f;
             enemy_scale_factor = 1.0f;
         } else if (enemy_life > ENEMY_BASE_LIFE*2) {
             enemy_type = "enemy_hard";
-            enemy_speed = 45.0f;
+            enemy_speed = 35.0f;
             enemy_scale_factor = 1.5f;
         }
         
@@ -289,8 +296,9 @@ void main_scene::proceed_touches(const std::vector<cocos2d::Touch *> &touches, c
             show_level_up();
             break;
         case MAIN_GAME_STATE:
+            m_selected_enemy.reset();
             for (auto touch = touches.begin(); touch != touches.end(); ++touch) {
-                
+
                 for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
                     if ((*enemy)->is_mark_for_remove() || (*enemy)->is_was_killed()) continue;
                     
@@ -303,6 +311,10 @@ void main_scene::proceed_touches(const std::vector<cocos2d::Touch *> &touches, c
                 m_gun->set_new_aim((*touch)->getLocation().x, (*touch)->getLocation().y);
                 rotate_ray((*touch)->getLocation());
             }
+            
+            if (!m_selected_enemy)
+                m_selected_enemy_aim->set_position(-1000.0f, -1000.0f);
+            
             break;
         case LEVEL_UP:
             if (m_button_pressed) return;
@@ -501,6 +513,8 @@ void main_scene::create_world() {
     schedule(schedule_selector(main_scene::update));
     
     add_enemy(ENEMIES_COUNT);
+    
+    m_update_objects_now = false;
     
     show_level_up();
 }

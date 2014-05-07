@@ -10,7 +10,7 @@
 #include <iostream>
 
 const float gun::BASE_SPEED     = 1250.0f;
-const float gun::DAMAGE_BASE    = 25.0f;
+const float gun::DAMAGE_BASE    = 35.0f;
 const float gun::SHOOT_INTERVAL_STEP = 0.05f;
 
 gun::gun(cocos2d::Layer* const parent,
