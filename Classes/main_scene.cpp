@@ -247,14 +247,16 @@ void main_scene::get_enemy_position(float &x, float &y, int& field_index, const 
     y = 10.0f;
     
     if (m_field_size == 0) {
-        m_field_size = m_visible_size.width / enemy_width;
+        m_field_size = m_visible_size.width / ENEMIES_COUNT;
         m_field = new bool[m_field_size];
+        for (int i = 0; i < m_field_size; ++i)
+            m_field[i] = false;
     }
     
     for (int i = 0; i < m_field_size; ++i) {
         if (m_field[i] == false) {
             m_field[i] = true;
-            x = (i * enemy_width) + (enemy_width/2.0f);
+            x = (i * m_visible_size.width/ENEMIES_COUNT) + (enemy_width/2.0f);
             field_index = i;
             return;
         }
