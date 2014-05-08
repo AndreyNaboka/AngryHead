@@ -19,17 +19,27 @@ bool main_scene::init() {
     return true;
 }
 
+main_scene::~main_scene() {
+    if (m_field_size) {
+        delete[] m_field;
+    }
+}
+
 void main_scene::update_game_objects(const float delta) {
-    
-    std::cout << "Start update game objects" << std::endl;
-    
+//
+//    std::cout << "Start update game objects" << std::endl;
+//
     m_update_objects_now = true;
     
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
-        std::cout << "\tupdate enemy " << (*enemy)->get_id() << std::endl;
+//
+//        std::cout << "\tupdate enemy " << (*enemy)->get_id() << std::endl;
+//
         (*enemy)->update(delta);
         if ((*enemy)->get_position_y() > m_origin.y + m_visible_size.height - 10.0f) {
-            std::cout << "\tenemy " << (*enemy)->get_id() << " kill head, gameOver()" << std::endl;
+//
+//            std::cout << "\tenemy " << (*enemy)->get_id() << " kill head, gameOver()" << std::endl;
+//
             (*enemy)->mark_for_remove();
             if ((*enemy)->get_id() == m_selected_enemy_aim->get_id()) {
                 m_selected_enemy_aim.reset();
@@ -52,23 +62,32 @@ void main_scene::update_game_objects(const float delta) {
     m_gun->update(delta);
     
     m_update_objects_now = false;
-    
-    std::cout << "\tGun update" << std::endl;
-    std::cout << "End update game objects";
+
+//
+//    std::cout << "\tGun update" << std::endl;
+//    std::cout << "End update game objects";
+//
 
 }
 
 void main_scene::check_collision_enemies_with_bullets() {
-    
-    std::cout << "Start check collision enemies with bullets" << std::endl;
-    
+//
+//    std::cout << "Start check collision enemies with bullets" << std::endl;
+//
     
     for (auto bullet = m_gun->first_bullet(); bullet != m_gun->end_bullet(); ++bullet) {
-        std::cout << "\tcheck bullet " << (*bullet)->get_id() << std::endl;
+//
+//        std::cout << "\tcheck bullet " << (*bullet)->get_id() << std::endl;
+//
         for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
-            std::cout << "\tcheck enemy " << (*enemy)->get_id() << std::endl;
+            
+//
+//            std::cout << "\tcheck enemy " << (*enemy)->get_id() << std::endl;
+//
             if ((*enemy)->is_mark_for_remove() || (*enemy)->is_was_killed()) {
-                std::cout << "\tenemy" << (*enemy)->get_id() << " already mark for remove, continue" << std::endl;
+//
+//                std::cout << "\tenemy" << (*enemy)->get_id() << " already mark for remove, continue" << std::endl;
+//
                 continue;
             }
             
@@ -77,43 +96,56 @@ void main_scene::check_collision_enemies_with_bullets() {
                                                     (*bullet)->get_position_y() > (*enemy)->get_position_y()-(*enemy)->get_height()/2 &&
                                                     (*bullet)->get_position_y() < (*enemy)->get_position_y()+(*enemy)->get_height()/2;
             if (is_bullet_intersect_enemy) {
-                std::cout << "\tBullet " << (*bullet)->get_id() << " intersect with enemy " << (*enemy)->get_id() << std::endl;
+//
+//                std::cout << "\tBullet " << (*bullet)->get_id() << " intersect with enemy " << (*enemy)->get_id() << std::endl;
+//
                 (*bullet)->mark_for_remove();
-                std::cout << "\tBullet " << (*bullet)->get_id() << " mark for remove" << std::endl;
-                std::cout << "\tEnemy " << (*enemy)->get_id() << " current life: " << (*enemy)->get_life() << std::endl;
+//
+//                std::cout << "\tBullet " << (*bullet)->get_id() << " mark for remove" << std::endl;
+//                std::cout << "\tEnemy " << (*enemy)->get_id() << " current life: " << (*enemy)->get_life() << std::endl;
+  
                 (*enemy)->set_life((*enemy)->get_life() - m_gun->get_damage());
-                std::cout << "\tEnemy " << (*enemy)->get_id() << " new life: " << (*enemy)->get_life() << std::endl;
+//
+//                std::cout << "\tEnemy " << (*enemy)->get_id() << " new life: " << (*enemy)->get_life() << std::endl;
+//
                 break;
             }
         }
     }
     
-    
-    std::cout << "End check collision enemies with bullets" << std::endl;
+//
+//    std::cout << "End check collision enemies with bullets" << std::endl;
+//
 }
 
 void main_scene::remove_objects_from_scene() {
-    std::cout << "Start remove objects from scene" << std::endl;
+//    
+//    std::cout << "Start remove objects from scene" << std::endl;
+//    
     unsigned int add_enemies_count = 0;
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
         if ((*enemy)->is_mark_for_remove()) {
-            std::cout << "\tenemy " << (*enemy)->get_id() << " is mark for remove" << std::endl;
-        
+//            
+//            std::cout << "\tenemy " << (*enemy)->get_id() << " is mark for remove" << std::endl;
+//
+            
             if (m_selected_enemy && (*enemy)->get_id() == m_selected_enemy->get_id()) {
                 m_selected_enemy.reset();
                 m_selected_enemy_aim->set_position(-1000.0f, -1000.0f);
             }
             
+            m_field[(*enemy)->get_field_index()] = false;
+            
             removeChild((*enemy)->get_sprite());
             m_enemies.erase(enemy);
             add_enemies_count++;
             m_score++;
-        } else {
-            std::cout << "\tenemy " << (*enemy)->get_id() << " not mark for remove" << std::endl;
         }
     }
     
-    std::cout << "End remove objects from scene" << std::endl;
+//    
+//    std::cout << "End remove objects from scene" << std::endl;
+//
     
     update_score();
     add_enemy(add_enemies_count);
@@ -211,29 +243,48 @@ void main_scene::show_level_up() {
     addChild(m_damage_level_label);
 }
 
-void main_scene::get_enemy_position(float &x, float &y, const float enemy_width) {
+void main_scene::get_enemy_position(float &x, float &y, int& field_index, const float enemy_width) {
     y = 10.0f;
-    bool position_found = true;
-    int tryCounter = 0;
-    float farX = 0.0f;
-    do {
-        x = (float)rand()/((float)RAND_MAX/(m_visible_size.width));
-        for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
-            const float distance = (*enemy)->get_sprite()->getPosition().getDistance(cocos2d::Point(x,y));
-            if (distance < enemy_width) {
-                if (farX < x)
-                    farX = x;
-                position_found = false;
-                tryCounter++;
-                break;
-            }
-            
+    
+    if (m_field_size == 0) {
+        m_field_size = m_visible_size.width / enemy_width;
+        m_field = new bool[m_field_size];
+    }
+    
+    for (int i = 0; i < m_field_size; ++i) {
+        if (m_field[i] == false) {
+            m_field[i] = true;
+            x = (i * enemy_width) + (enemy_width/2.0f);
+            field_index = i;
+            return;
         }
-        if (tryCounter >= 50) break;
-        
-    } while (!position_found);
-    if (tryCounter >= 50)
-        x = farX;
+    }
+    
+    const int random_index = (rand() % m_field_size + 1);
+    x = (random_index * enemy_width) + (enemy_width/2.0f);
+    field_index = random_index;
+    
+//    bool position_found = true;
+//    int tryCounter = 0;
+//    float farX = 0.0f;
+//    do {
+//        x = (float)rand()/((float)RAND_MAX/(m_visible_size.width));
+//        for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
+//            const float distance = (*enemy)->get_sprite()->getPosition().getDistance(cocos2d::Point(x,y));
+//            if (distance < enemy_width) {
+//                if (farX < x)
+//                    farX = x;
+//                position_found = false;
+//                tryCounter++;
+//                break;
+//            }
+//            
+//        }
+//        if (tryCounter >= 50) break;
+//        
+//    } while (!position_found);
+//    if (tryCounter >= 50)
+//        x = farX;
 }
 
 void main_scene::add_enemy(const int count) {
@@ -260,15 +311,19 @@ void main_scene::add_enemy(const int count) {
         
         auto new_enemy = enemy_ptr(new enemy(enemy_type, min_distance_to_head));
         float x_position, y_position;
-        get_enemy_position(x_position, y_position, std::max(new_enemy->get_width(), new_enemy->get_height()));
+        int field_index;
+        get_enemy_position(x_position, y_position, field_index, std::max(new_enemy->get_width(), new_enemy->get_height()));
         new_enemy->set_position(x_position, y_position);
         new_enemy->set_move_to(x_position, move_to_y);
         new_enemy->set_life(enemy_life);
         new_enemy->set_speed(enemy_speed);
         new_enemy->set_scale(enemy_scale_factor);
+        new_enemy->set_field_index(field_index);
         addChild(new_enemy->get_sprite());
         m_enemies.insert(m_enemies.end(), new_enemy);
-        std::cout << "Add new enemy " << new_enemy->get_id() << ", type: " << enemy_type << std::endl;
+//        
+//        std::cout << "Add new enemy " << new_enemy->get_id() << ", type: " << enemy_type << std::endl;
+//        
     }
 }
 
@@ -422,7 +477,7 @@ void main_scene::game_over() {
 
 
     m_last_label->setPosition(m_origin.x + m_visible_size.width/2 - (m_last_label->getWidth()/2),
-                               m_origin.y + m_visible_size.height/2 - (m_last_label->getHeight()/2));
+                              m_origin.y + m_visible_size.height/2 - (m_last_label->getHeight()/2));
 }
 
 void main_scene::show_debug_info() {
@@ -515,6 +570,8 @@ void main_scene::create_world() {
     add_enemy(ENEMIES_COUNT);
     
     m_update_objects_now = false;
+ 
+    m_field_size = 0;
     
     show_level_up();
 }

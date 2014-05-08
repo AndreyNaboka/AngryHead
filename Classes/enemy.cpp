@@ -17,6 +17,7 @@ enemy::enemy(const std::string& name, const float min_distance)
     ,m_state(NORMAL)
     ,m_was_killed(false)
     ,m_speed(0.0f)
+    ,m_field_index(0)
 {
 }
 

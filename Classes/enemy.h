@@ -21,12 +21,14 @@ public:
     float          get_life() const                { return m_life; }
     void           set_life(const float new_life);
     void           set_speed(const float speed);
-
+    void           set_field_index(const int index) { m_field_index = index; }
+    int            get_field_index() const          { return m_field_index; }
 private:
     float m_min_distance;
     float m_speed;
     bool  m_was_killed;
     float m_life;
+    int m_field_index;
     
     const float TIME_TO_SHOW_EXLOSION = 1.0f;
     const float TIME_TO_SHOW_COIN     = 1.0f;

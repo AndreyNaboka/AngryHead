@@ -14,6 +14,7 @@ public:
     static cocos2d::Scene* createScene();
     virtual bool init();
     void update(const float delta);
+    virtual ~main_scene();
     
     virtual void onTouchesEnded(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event *event);
     virtual void onTouchesMoved(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event *event);
@@ -36,7 +37,7 @@ private:
     void proceed_touches(const std::vector<cocos2d::Touch*> &touches, cocos2d::Event *event);
     void hide_level_up();
     void hide_game_over();
-    void get_enemy_position(float& x, float& y, const float enemy_width);
+    void get_enemy_position(float &x, float &y, int& field_index, const float enemy_width);
     
 private:
     //
@@ -91,6 +92,10 @@ private:
         GAME_OVER,
         LEVEL_UP
     };
+    
+    int m_field_size;
+    bool* m_field;
+    
     
     bool m_update_objects_now;
     
