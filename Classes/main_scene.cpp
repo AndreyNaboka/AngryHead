@@ -425,6 +425,11 @@ void main_scene::hide_level_up() {
     removeChild(m_fire_rate_level_label);
     removeChild(m_damage_level_label);
     
+    if (m_field_size) {
+        for (int i = 0; i < m_field_size; ++i)
+            m_field[i] = false;
+    }
+    
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
         removeChild((*enemy)->get_sprite());
         m_enemies.erase(enemy);
