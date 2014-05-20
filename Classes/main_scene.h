@@ -83,9 +83,12 @@ private:
     static const int FIRE_RATE_COST  = 100;
     static const int DAMAGE_COST     = 100;
     static const int ENEMY_BASE_LIFE = 40;
+    constexpr static const float TIME_TO_NEXT_ENEMIES_WALL = 3.8f;
     static const std::string UP_GUN_DAMAGE;
     static const std::string UP_GUN_FIRE_RATE;
     static const std::string UP_SCORE;
+    
+    float m_time_to_next_wall;
     
     enum GAME_STATE {
         MAIN_GAME_STATE,
@@ -93,8 +96,8 @@ private:
         LEVEL_UP
     };
     
-    int m_field_size;
-    bool* m_field;
+//    int m_field_size;
+//    bool* m_field;
     
     
     bool m_update_objects_now;

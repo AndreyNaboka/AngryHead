@@ -20,9 +20,9 @@ bool main_scene::init() {
 }
 
 main_scene::~main_scene() {
-    if (m_field_size) {
-        delete[] m_field;
-    }
+//    if (m_field_size) {
+//        delete[] m_field;
+//    }
 }
 
 void main_scene::update_game_objects(const float delta) {
@@ -30,6 +30,14 @@ void main_scene::update_game_objects(const float delta) {
 //    std::cout << "Start update game objects" << std::endl;
 //
     m_update_objects_now = true;
+    
+    if (m_time_to_next_wall <= 0.0f) {
+        add_enemy(0);
+        m_time_to_next_wall = TIME_TO_NEXT_ENEMIES_WALL;
+    } else {
+        m_time_to_next_wall -= delta;
+    }
+    
     
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
 //
@@ -104,7 +112,8 @@ void main_scene::check_collision_enemies_with_bullets() {
 //                std::cout << "\tBullet " << (*bullet)->get_id() << " mark for remove" << std::endl;
 //                std::cout << "\tEnemy " << (*enemy)->get_id() << " current life: " << (*enemy)->get_life() << std::endl;
   
-                (*enemy)->set_life((*enemy)->get_life() - m_gun->get_damage());
+//                (*enemy)->set_life((*enemy)->get_life() - m_gun->get_damage());
+                (*enemy)->set_life(0);
 //
 //                std::cout << "\tEnemy " << (*enemy)->get_id() << " new life: " << (*enemy)->get_life() << std::endl;
 //
@@ -134,7 +143,7 @@ void main_scene::remove_objects_from_scene() {
                 m_selected_enemy_aim->set_position(-1000.0f, -1000.0f);
             }
             
-            m_field[(*enemy)->get_field_index()] = false;
+//            m_field[(*enemy)->get_field_index()] = false;
             
             removeChild((*enemy)->get_sprite());
             m_enemies.erase(enemy);
@@ -148,7 +157,7 @@ void main_scene::remove_objects_from_scene() {
 //
     
     update_score();
-    add_enemy(add_enemies_count);
+//    add_enemy(add_enemies_count);
     
     for (auto bullet = m_gun->first_bullet(); bullet != m_gun->end_bullet(); ++bullet) {
         if (((*bullet)->is_mark_for_remove()) ||
@@ -244,27 +253,30 @@ void main_scene::show_level_up() {
 }
 
 void main_scene::get_enemy_position(float &x, float &y, int& field_index, const float enemy_width) {
-    y = 10.0f;
+//    y = 10.0f;
+//    
+//    if (m_field_size == 0) {
+//        m_field_size = m_visible_size.width / ENEMIES_COUNT;
+//        m_field = new bool[m_field_size];
+//        for (int i = 0; i < m_field_size; ++i)
+//            m_field[i] = false;
+//    }
+//    
+//    for (int i = 0; i < m_field_size; ++i) {
+//        if (m_field[i] == false) {
+//            m_field[i] = true;
+//            x = (i * m_visible_size.width/ENEMIES_COUNT) + (enemy_width/2.0f);
+//            field_index = i;
+//            return;
+//        }
+//    }
+//    
+//    const int random_index = (rand() % m_field_size + 1);
+//    x = (random_index * enemy_width) + (enemy_width/2.0f);
+//    field_index = random_index;
     
-    if (m_field_size == 0) {
-        m_field_size = m_visible_size.width / ENEMIES_COUNT;
-        m_field = new bool[m_field_size];
-        for (int i = 0; i < m_field_size; ++i)
-            m_field[i] = false;
-    }
     
-    for (int i = 0; i < m_field_size; ++i) {
-        if (m_field[i] == false) {
-            m_field[i] = true;
-            x = (i * m_visible_size.width/ENEMIES_COUNT) + (enemy_width/2.0f);
-            field_index = i;
-            return;
-        }
-    }
     
-    const int random_index = (rand() % m_field_size + 1);
-    x = (random_index * enemy_width) + (enemy_width/2.0f);
-    field_index = random_index;
     
 //    bool position_found = true;
 //    int tryCounter = 0;
@@ -292,35 +304,47 @@ void main_scene::get_enemy_position(float &x, float &y, int& field_index, const 
 void main_scene::add_enemy(const int count) {
     const float min_distance_to_head = 10.0f;
     const float move_to_y = m_origin.x + m_visible_size.height;
-    for (int i = 0; i < count; ++i) {
-        const float enemy_life = (rand() % 3 + 1) * ENEMY_BASE_LIFE;
-        std::string enemy_type;
-        float enemy_speed = 0.0f;
-        float enemy_scale_factor = 1.0f;
-        if (enemy_life <= ENEMY_BASE_LIFE) {
-            enemy_type = "enemy";
-            enemy_speed = 60.0f;
-            enemy_scale_factor = 0.65f;
-        } else if (enemy_life > ENEMY_BASE_LIFE && enemy_life <= ENEMY_BASE_LIFE*2) {
-            enemy_type = "enemy_mid";
-            enemy_speed = 50.0f;
-            enemy_scale_factor = 1.0f;
-        } else if (enemy_life > ENEMY_BASE_LIFE*2) {
-            enemy_type = "enemy_hard";
-            enemy_speed = 35.0f;
-            enemy_scale_factor = 1.5f;
-        }
+
+    
+    const std::string enemy_type = "enemy_mid";
+    const float enemy_speed = 25.0f;
+    const float enemy_scale_factor = 1.0f;
+    const float enemy_life = ENEMY_BASE_LIFE;
+    const float enemy_width = enemy_ptr(new enemy(enemy_type, min_distance_to_head))->get_width();
+    
+    float enemies_count = m_visible_size.width/(enemy_width+40.0f);
+    
+    for (int i = 1; i < enemies_count; ++i) {
+//        const float enemy_life = (rand() % 3 + 1) * ENEMY_BASE_LIFE;
+
+//        if (enemy_life <= ENEMY_BASE_LIFE) {
+//            enemy_type = "enemy";
+//            enemy_speed = 60.0f;
+//            enemy_scale_factor = 0.65f;
+//        } else if (enemy_life > ENEMY_BASE_LIFE && enemy_life <= ENEMY_BASE_LIFE*2) {
+//            enemy_type = "enemy_mid";
+//            enemy_speed = 50.0f;
+//            enemy_scale_factor = 1.0f;
+//        } else if (enemy_life > ENEMY_BASE_LIFE*2) {
+//            enemy_type = "enemy_hard";
+//            enemy_speed = 35.0f;
+//            enemy_scale_factor = 1.5f;
+//        }
+
+
+
         
         auto new_enemy = enemy_ptr(new enemy(enemy_type, min_distance_to_head));
-        float x_position, y_position;
-        int field_index;
-        get_enemy_position(x_position, y_position, field_index, std::max(new_enemy->get_width(), new_enemy->get_height()));
-        new_enemy->set_position(x_position, y_position);
+//        float x_position, y_position;
+//        int field_index;
+//        get_enemy_position(x_position, y_position, field_index, std::max(new_enemy->get_width(), new_enemy->get_height()));
+        const float x_position =  new_enemy->get_width()*i + (i*40.0f);
+        new_enemy->set_position(x_position, 10.0f);
         new_enemy->set_move_to(x_position, move_to_y);
         new_enemy->set_life(enemy_life);
         new_enemy->set_speed(enemy_speed);
         new_enemy->set_scale(enemy_scale_factor);
-        new_enemy->set_field_index(field_index);
+//        new_enemy->set_field_index(field_index);
         addChild(new_enemy->get_sprite());
         m_enemies.insert(m_enemies.end(), new_enemy);
 //        
@@ -425,10 +449,10 @@ void main_scene::hide_level_up() {
     removeChild(m_fire_rate_level_label);
     removeChild(m_damage_level_label);
     
-    if (m_field_size) {
-        for (int i = 0; i < m_field_size; ++i)
-            m_field[i] = false;
-    }
+//    if (m_field_size) {
+//        for (int i = 0; i < m_field_size; ++i)
+//            m_field[i] = false;
+//    }
     
     for (auto enemy = m_enemies.begin(); enemy != m_enemies.end(); ++enemy) {
         removeChild((*enemy)->get_sprite());
@@ -574,11 +598,9 @@ void main_scene::create_world() {
     srand(static_cast<unsigned int>(time(0)));
     schedule(schedule_selector(main_scene::update));
     
-    add_enemy(ENEMIES_COUNT);
-    
     m_update_objects_now = false;
- 
-    m_field_size = 0;
+    m_time_to_next_wall = TIME_TO_NEXT_ENEMIES_WALL;
+//    m_field_size = 0;
     
     show_level_up();
 }
